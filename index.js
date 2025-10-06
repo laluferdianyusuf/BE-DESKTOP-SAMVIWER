@@ -4,17 +4,22 @@ const cors = require("cors");
 const app = express();
 const PORT = 2090;
 const upload = require("./utils/fileUploads");
+const path = require("path");
 // require("dotenv").config();
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
+app.use("/videos", express.static("D:/VideosRaspi"));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const UserController = require("./controllers/userController");
 const DeviceController = require("./controllers/deviceController");
 const DataController = require("./controllers/dataController");
+const RaspiController = require("./controllers/raspiController");
+const ScheduleController = require("./controllers/scheduleController");
+const EmailController = require("./controllers/emailController");
 const middleware = require("./middleware/auth");
-const { device } = require("./models");
 
 app.get("/", async (req, res) => {
   res.status(200).send({
@@ -24,15 +29,10 @@ app.get("/", async (req, res) => {
 
 // User
 app.post("/api/v1/register/user", UserController.createUser);
-app.post(
-  "/api/v1/login/user",
-  middleware.authentication,
-  UserController.login,
-  middleware.isAdmin
-);
+app.post("/api/v1/login/user", UserController.login);
 app.get(
   "/api/v1/getAll/user",
-  middleware.authentication,
+  // middleware.authentication,
   UserController.getAllUser,
   middleware.isAdmin
 );
@@ -66,6 +66,25 @@ app.post(
   DataController.createVideo
 );
 app.get("/api/v3/get/speed/category", DataController.getSpeedByCategory);
+app.get("/api/v3/filter/data/:samId", DataController.filterData);
+app.get("/api/v3/all/data/:samId", DataController.getAllData);
+
+// raspi
+app.get("/api/v4/raspi/:samId/connect", RaspiController.connect);
+app.get("/api/v4/raspi/:samId/collect", RaspiController.collect);
+app.post("/api/v4/raspi/:samId/configure", RaspiController.configure);
+app.get("/api/v4/raspi/:samId/config", RaspiController.getConfig);
+
+// schedule
+app.post("/api/v5/schedule/generate", ScheduleController.createSchedule);
+app.put("/api/v5/schedule/:id/stop", ScheduleController.stopSchedule);
+app.get("/api/v5/schedule/get", ScheduleController.getAllSchedules);
+
+// email
+app.post("/api/v6/email/create", EmailController.createEmail);
+app.get("/api/v6/emails/get", EmailController.getEmails);
+app.get("/api/v6/email/get/:emailName", EmailController.getEmailByEmail);
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`listening on http://localhost:${PORT}`);
 });

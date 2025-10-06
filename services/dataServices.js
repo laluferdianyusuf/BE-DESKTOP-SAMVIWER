@@ -1,7 +1,9 @@
 const DataRepositories = require("../repositories/dataRepositories");
 const DeviceRepositories = require("../repositories/deviceRepositories");
-const cloudinary = require("../utils/cloudinary");
-const streamifier = require("streamifier");
+const { uploadToGCS } = require("../utils/gcs");
+const fs = require("fs");
+const path = require("path");
+const LOCAL_SAVE_PATH = "D:/VideosRaspi";
 
 class DataServices {
   static validateFields(fields) {
@@ -15,91 +17,78 @@ class DataServices {
 
   static async createVideo({ video, speed, samId }) {
     try {
-      const error = this.validateFields({
-        video: video,
-        speed: speed,
-      });
-
+      // === Validasi Input ===
+      const error = this.validateFields({ video, speed, samId });
       if (error) {
         return {
           status: false,
           status_code: 400,
           message: error,
-          data: { data: null },
+          data: null,
         };
       }
 
-      let categories = "";
+      // === Tentukan Kategori ===
+      let category = "";
+      if (speed > 99) category = "over speed";
+      else if (speed > 30 && speed <= 99) category = "average speed";
+      else category = "low speed";
 
-      if (speed > 99) {
-        categories = "over speed";
-      } else if (speed > 30 && speed < 99) {
-        categories = "average speed";
-      } else if (speed < 30) {
-        categories = "low speed";
-      }
-
-      const getDevice = await DeviceRepositories.existingDevice({
-        samId: samId,
-      });
-
-      if (!getDevice) {
+      // === Pastikan Device Ada ===
+      const device = await DeviceRepositories.existingDevice({ samId });
+      if (!device) {
         return {
           status: false,
           status_code: 404,
-          message: "Can't find a device",
-          data: { device: null },
+          message: "Device not found",
+          data: null,
         };
       }
 
-      let videos = "";
-
-      if (video) {
-        const uploadToCloudinary = () => {
-          return new Promise((resolve, reject) => {
-            const stream = cloudinary.uploader.upload_stream(
-              {
-                resource_type: "video",
-                folder: "cctv_videos",
-              },
-              (error, result) => {
-                if (result) resolve(result);
-                else reject(error);
-              }
-            );
-
-            streamifier.createReadStream(video.buffer).pipe(stream);
-          });
-        };
-
-        const cloudinaryResult = await uploadToCloudinary();
-        videos = cloudinaryResult.secure_url;
-      } else {
-        videos = getDevice.video;
+      // === Simpan ke Folder Lokal ===
+      const samFolder = path.join(LOCAL_SAVE_PATH, samId);
+      if (!fs.existsSync(samFolder)) {
+        fs.mkdirSync(samFolder, { recursive: true });
       }
 
-      const createVideo = await DataRepositories.createVideo({
-        deviceId: getDevice.deviceId,
-        samId: samId,
-        video: videos,
-        speed: speed,
-        category: categories,
+      const fileName = `${Date.now()}_${video.originalname}`;
+      const localPath = path.join(samFolder, fileName);
+
+      // Simpan file video ke disk
+      fs.writeFileSync(localPath, video.buffer);
+
+      // === Upload ke GCS ===
+      const gcsPath = `${samId}/${fileName}`;
+      const gcsUrl = await uploadToGCS(localPath, gcsPath);
+
+      // === Simpan ke Database ===
+      const saveData = await DataRepositories.createVideo({
+        deviceId: device.id,
+        samId,
+        speed,
+        video: gcsUrl, // gunakan URL dari GCS
+        category,
+        createdAt: new Date(),
       });
+
+      // === Hapus file lokal setelah upload (opsional) ===
+      if (fs.existsSync(localPath)) {
+        fs.unlinkSync(localPath);
+      }
 
       return {
         status: true,
         status_code: 200,
         message: "Video uploaded successfully",
-        data: { device: createVideo },
+        data: { data: saveData },
       };
     } catch (error) {
+      console.error("❌ Create video error:", error);
       return {
         status: false,
         status_code: 500,
-        message: "Server error" + error,
-        data: {
-          data: null,
-        },
+        message: "Server error: " + error.message,
+        data: null,
       };
     }
   }
@@ -133,6 +122,66 @@ class DataServices {
         data: {
           data: null,
         },
+      };
+    }
+  }
+
+  static async findData({
+    minSpeed,
+    maxSpeed,
+    category,
+    samId,
+    startDate,
+    endDate,
+  }) {
+    try {
+      const parsedMinSpeed = minSpeed ? Number(minSpeed) : null;
+      const parsedMaxSpeed = maxSpeed ? Number(maxSpeed) : null;
+      const parsedStartDate = startDate ? new Date(startDate) : null;
+      const parsedEndDate = endDate ? new Date(endDate) : null;
+
+      const findData = await DataRepositories.findData({
+        minSpeed: parsedMinSpeed,
+        maxSpeed: parsedMaxSpeed,
+        category,
+        samId,
+        startDate: parsedStartDate,
+        endDate: parsedEndDate,
+      });
+
+      return {
+        status: true,
+        status_code: 200,
+        message: "Data Retrieved",
+        data: { data: findData },
+      };
+    } catch (error) {
+      console.error("SERVICE ERROR:", error);
+      return {
+        status: false,
+        status_code: 500,
+        message: "Server error: " + error.message,
+        data: null,
+      };
+    }
+  }
+
+  static async getAllData({ samId }) {
+    try {
+      const getData = await DataRepositories.getAllData({ samId });
+
+      return {
+        status: true,
+        status_code: 200,
+        message: "Successfully",
+        data: getData,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        status_code: 500,
+        message: "Server error: " + error.message,
+        data: null,
       };
     }
   }

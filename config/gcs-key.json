@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "expo-push-notification-1c962",
+  "private_key_id": "cdcbbdef37ab8abdf1481711c95d9427d34b833c",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDrKe5k3RKFFJdt\nAP7D+4NmbhyOW0lg8zw6Au3W1PtUqGSeg/pmzWlT89XUTsjwK31Ymq21QnvRaqOT\nCOpKOBAu//HvZ3iJpa9CIrs5+V78rBpuFiK8FAPxmNPXs8JSZwViTKJV06wdcLks\nsCXxy07riu/PD0KHkz/9FM3XCffoASUm13bvOjqJypfL53fEywkd++O+k23wZq3l\nkfFbBsZITC47OD+qiBXRyOF31mk0IcVXTgdnHOqqZVZ+U4rTaI3Z6oamjrleJCju\nf1Bp/ofzQ9EYfZh+WvN2YMiiRdoJzY8mWIXYadoLrbVsVfm5aKb0UUp09HbdpARh\nsv9aGKlZAgMBAAECggEAHKflZuERiqnxsdS3NsaFQowUarxw+qFpK2CD/vPBFJXY\nfQB0GOba+OHzooVfMvT5tzxSAo5xbBlkiVxCwHyIbFG/935ST+OisZpt2iirDHsk\nVVnZLbX6rQwEdHpxKX1oSIwyE+dRR90ek3V7ijVODqHFiyO+5app17sbQiLy1JBj\nWiFRYswkf9dgtV64DWNEAj2sO3GWys81wC9WABbzjsLjy2W/sDIdy6aAJJE5mvRz\npCFS8qt//EsPgbyM8aBSC/eWy0662CJzmzveLf2IOs2n9PGHabtkQncn6z/tw7PR\nDNw4ULD8Q/bjV77QjS5nAx/qxR2KYQtsOh5lwUMrKQKBgQD5lN6plZ00RO2B6yLg\naWbqgHVH+sOpJfRTStk0fvbNLwObJYdRBIoibrV86zz+CG2d/AoOcv0I2Ll3cDhx\nFv41AcpkKgrLEIbiTyNe1jUw4UUhuRt7kf5CeJtDYuq0imCfMN5xJd5SoNpA+aai\n+TozNl61j94nlyJtRI9xwBOkJwKBgQDxNiRJJaItDrFX47xGcajuazU8I0fHeILg\nfXOebLutQ2QPlNcbuJc+Rwyaf1ksNO8eK3iS84h+AMKjNn6lHDj9u0lmCCq+9e5z\nQTH4DqJ7J5q1s1KWHnjWPrxnfIYiHJP1IVpfKqZMFUNqvypsvcdafzdQMpa+G00K\nqKCDCLY2fwKBgQC551mzl+3w8Sa4jxz7a4dtRSIW64Kyi8LiB+6iW7AaRdq5xcp1\nXpxF6ZDl65MS5dRAyWv0N1KjNEtx2/Uux6GyehL3aRmBCF5wU+JU0dns/t8vr2H5\nOVXazVtZZmTM9gXijdQjE8H2ajooC81Dt8DSRL1nIDKp6rmKCneOkzQOIQKBgQCY\nHtAFfYForxJy3kHXn0iti9kX4xwalUrcruFisSovHAgXt4NtjR18/ivZp6SiN4Px\n3/J7orCa3nnhmrWGBWV/x0SD33St18WY1C3iRcB8sL5mBwB3giIs44XIMgUZsDIz\nbuRijjAwXVyWDpd/2rPFw+MrZawhmnAc37nSyYS4mwKBgAkWDdw0Z3HpwzrvfvND\nrwqWCSE77+Vd4VNG9f8wsCUzOM8UkoS8BWMDpGi8QwVMxbP+CTmAQkE6LqBfe4Hu\nyVGULrFnDJ5OHh5Y506ZDHL7qMZwbmAiZ3ys6vKD2oCUK7LOFRO/WoBPD4Q0Qpcd\nMzEE/W5knuWfyiJ9C1Hk4K1O\n-----END PRIVATE KEY-----\n",
+  "client_email": "raspi-uploader@expo-push-notification-1c962.iam.gserviceaccount.com",
+  "client_id": "115515072394007463494",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/raspi-uploader%40expo-push-notification-1c962.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

@@ -24,7 +24,8 @@ module.exports = (sequelize, DataTypes) => {
   data.init(
     {
       speed: DataTypes.FLOAT,
-      video: DataTypes.STRING,
+      video: DataTypes.TEXT,
+      localVideo: DataTypes.TEXT,
       deviceId: DataTypes.STRING,
       samId: DataTypes.STRING,
       category: DataTypes.STRING,

@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const { data, device } = require("../models");
 
 class DataRepositories {
@@ -22,15 +23,71 @@ class DataRepositories {
     return getCategory;
   }
 
-  static async createVideo({ deviceId, samId, speed, video, category }) {
+  static async createVideo({
+    deviceId,
+    samId,
+    speed,
+    video,
+    localVideo,
+    category,
+    createdAt,
+  }) {
     const createVideo = await data.create({
       video: video,
+      localVideo: localVideo,
       samId: samId,
       deviceId: deviceId,
       speed: speed,
       category: category,
+      createdAt: createdAt,
     });
     return createVideo;
+  }
+
+  static async findOneVideo({ videoUrl }) {
+    const findVideo = await data.findOne({ where: { video: videoUrl } });
+    return findVideo;
+  }
+
+  static async findData({
+    samId,
+    minSpeed,
+    maxSpeed,
+    startDate,
+    endDate,
+    category,
+  }) {
+    const where = {};
+
+    if (samId) {
+      where.samId = samId;
+    }
+
+    if (minSpeed !== undefined && maxSpeed !== undefined) {
+      where.speed = { [Op.gte]: minSpeed, [Op.lte]: maxSpeed };
+    } else if (minSpeed !== undefined) {
+      where.speed = { [Op.gte]: minSpeed };
+    } else if (maxSpeed !== undefined) {
+      where.speed = { [Op.lte]: maxSpeed };
+    }
+
+    if (startDate && endDate) {
+      where.createdAt = { [Op.gte]: startDate, [Op.lte]: endDate };
+    } else if (startDate) {
+      where.createdAt = { [Op.gte]: startDate };
+    } else if (endDate) {
+      where.createdAt = { [Op.lte]: endDate };
+    }
+
+    if (category && category !== "all") {
+      where.category = category;
+    }
+
+    return await data.findAll({ where });
+  }
+
+  static async getAllData({ samId }) {
+    return await data.findAll({ where: { samId: samId } });
   }
 }
 module.exports = DataRepositories;

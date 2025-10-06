@@ -2,11 +2,10 @@ const UserRepositories = require("../repositories/userRepositories");
 const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const { Op } = require("sequelize");
 const { JWT } = require("../lib/const");
 
 class UserServices {
-  static async register({ username, password }) {
+  static async register({ username, password, credential }) {
     try {
       if (!username) {
         return {
@@ -34,6 +33,7 @@ class UserServices {
       const existingUsername = await UserRepositories.existingUsername({
         username,
       });
+
       if (existingUsername) {
         return {
           status: false,
@@ -46,6 +46,7 @@ class UserServices {
         userId: uuidv4(),
         username,
         password: await bcrypt.hash(password, JWT.SALT_ROUND),
+        credential,
       });
       return {
         status: true,
@@ -62,7 +63,7 @@ class UserServices {
       };
     }
   }
-  static async login({ username, password }) {
+  static async login({ username, password, credential }) {
     try {
       const getUser = await UserRepositories.existingUsername({ username });
       if (!getUser) {
@@ -87,7 +88,7 @@ class UserServices {
           id: getUser.id,
           userId: getUser.userId,
           username: getUser.username,
-          credential: getUser.credential,
+          credential: credential,
         },
         JWT.SECRET
       );

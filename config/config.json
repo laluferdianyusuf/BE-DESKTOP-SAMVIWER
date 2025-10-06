@@ -1,23 +1,44 @@
 {
   "development": {
-    "username": "root",
-    "password": null,
-    "database": "db_samviewer",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
+    "username": "sa",
+    "password": "P@ssword123",
+    "database": "SamViewerDb",
+    "host": "localhost",
+    "dialect": "mssql",
+    "port": 1433,
+    "dialectOptions": {
+      "options": {
+        "encrypt": false,
+        "trustServerCertificate": true
+      }
+    }
   },
   "test": {
-    "username": "root",
-    "password": null,
-    "database": "db_samviewer",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
+    "username": "sa",
+    "password": "P@ssword123",
+    "database": "SamViewerDb",
+    "host": "localhost",
+    "dialect": "mssql",
+    "port": 1433,
+    "dialectOptions": {
+      "options": {
+        "encrypt": false,
+        "trustServerCertificate": true
+      }
+    }
   },
   "production": {
-    "username": "root",
-    "password": null,
-    "database": "db_samviewer",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
+    "username": "sa",
+    "password": "P@ssword123",
+    "database": "SamViewerDb",
+    "host": "localhost",
+    "dialect": "mssql",
+    "port": 1433,
+    "dialectOptions": {
+      "options": {
+        "encrypt": false,
+        "trustServerCertificate": true
+      }
+    }
   }
 }

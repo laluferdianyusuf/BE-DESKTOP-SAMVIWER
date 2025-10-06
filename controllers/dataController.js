@@ -35,4 +35,37 @@ const getSpeedByCategory = async (req, res) => {
   });
 };
 
-module.exports = { createVideo, getSpeedByCategory };
+const filterData = async (req, res) => {
+  const { samId } = req.params;
+  const { minSpeed, maxSpeed, startDate, endDate, category } = req.query;
+  const { status, status_code, message, data } = await dataServices.findData({
+    samId,
+    minSpeed,
+    maxSpeed,
+    startDate,
+    endDate,
+    category,
+  });
+
+  res.status(status_code).send({
+    status: status,
+    status_code: status_code,
+    message: message,
+    data: data,
+  });
+};
+const getAllData = async (req, res) => {
+  const { samId } = req.params;
+  const { status, status_code, message, data } = await dataServices.getAllData({
+    samId,
+  });
+
+  res.status(status_code).send({
+    status: status,
+    status_code: status_code,
+    message: message,
+    data: data,
+  });
+};
+
+module.exports = { createVideo, getSpeedByCategory, filterData, getAllData };

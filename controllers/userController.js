@@ -1,10 +1,11 @@
 const UserServices = require("../services/userServices");
 
 const createUser = async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, credential } = req.body;
   const { status, status_code, message, data } = await UserServices.register({
     username,
     password,
+    credential,
   });
   res.status(status_code).send({
     status,
@@ -15,10 +16,11 @@ const createUser = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, credential } = req.body;
   const { status, status_code, message, data } = await UserServices.login({
     username,
     password,
+    credential,
   });
   res.status(status_code).send({
     status,

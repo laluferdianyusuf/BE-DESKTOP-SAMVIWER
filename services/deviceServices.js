@@ -1,3 +1,4 @@
+const { Logger } = require("sequelize/lib/utils/logger");
 const DeviceRepositories = require("../repositories/deviceRepositories");
 const { v4: uuidv4 } = require("uuid");
 
@@ -34,6 +35,9 @@ class DeviceServices {
           data: { device: null },
         };
       }
+
+      console.log(deviceIP);
+
       const existingDevice = await DeviceRepositories.existingDevice({
         samId,
       });
@@ -160,12 +164,13 @@ class DeviceServices {
   static async getAllDevice() {
     try {
       const getAllDevice = await DeviceRepositories.getAllDevice();
+
       if (getAllDevice) {
         return {
           status: true,
           status_code: 201,
           message: "Successfully get all device",
-          data: { user: getAllDevice },
+          data: { device: getAllDevice },
         };
       }
     } catch (error) {
