@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const { schedule } = require("../models");
 
 class ScheduleRepository {
@@ -10,7 +11,7 @@ class ScheduleRepository {
     });
   }
 
-  static async getActiveSchedules({ isActive = true }) {
+  static async getActiveSchedules(isActive = true) {
     return await schedule.findAll({
       where: {
         isActive,
@@ -20,6 +21,22 @@ class ScheduleRepository {
 
   static async getAllSchedules() {
     return await schedule.findAll();
+  }
+
+  static async findScheduleBySamIds(samIds) {
+    return await schedule.findAll({
+      where: {
+        isActive: true,
+        [Op.or]: samIds.map((samId) => ({
+          samIds: { [Op.like]: `%${samId}%` },
+        })),
+      },
+    });
+  }
+
+  static async updateSchedule(id, payload) {
+    await schedule.update(payload, { where: { id } });
+    return await schedule.findByPk(id);
   }
 
   static async stopSchedule({ id }) {

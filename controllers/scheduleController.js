@@ -18,9 +18,9 @@ const createSchedule = async (req, res) => {
 };
 
 const stopSchedule = async (req, res) => {
-  const { id } = req.params;
+  const { samIds } = req.body;
   const { status, status_code, message, data } =
-    await ScheduleService.stopSchedule(id);
+    await ScheduleService.stopSchedule({ samIds });
 
   res.status(status_code).send({
     status,
@@ -42,8 +42,34 @@ const getAllSchedules = async (req, res) => {
   });
 };
 
+const listActiveSchedules = async (req, res) => {
+  const { status, status_code, message, data } =
+    await ScheduleService.listActiveSchedules();
+
+  res.status(status_code).send({
+    status,
+    status_code,
+    message,
+    data,
+  });
+};
+
+const loadSchedules = async (req, res) => {
+  const { status, status_code, message, data } =
+    await ScheduleService.loadSchedules();
+
+  res.status(status_code).send({
+    status,
+    status_code,
+    message,
+    data,
+  });
+};
+
 module.exports = {
   createSchedule,
   stopSchedule,
   getAllSchedules,
+  loadSchedules,
+  listActiveSchedules,
 };

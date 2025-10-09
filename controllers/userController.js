@@ -31,11 +31,13 @@ const login = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-  const { id } = req.params;
+  const { userId } = req.params;
+  const { username, password, credential } = req.body;
   const { status, status_code, message, data } = await UserServices.updateUser({
-    id,
+    userId,
     username,
     password,
+    credential,
   });
   res.status(status_code).send({
     status,
@@ -46,9 +48,9 @@ const updateUser = async (req, res) => {
 };
 
 const deleteUser = async (req, res) => {
-  const { id } = req.params;
+  const { userId } = req.params;
   const { status, status_code, message, data } = await UserServices.deleteUser({
-    id,
+    userId,
   });
   res.status(status_code).send({
     status,

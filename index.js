@@ -19,6 +19,7 @@ const DataController = require("./controllers/dataController");
 const RaspiController = require("./controllers/raspiController");
 const ScheduleController = require("./controllers/scheduleController");
 const EmailController = require("./controllers/emailController");
+const LogController = require("./controllers/logController");
 const middleware = require("./middleware/auth");
 
 app.get("/", async (req, res) => {
@@ -36,17 +37,8 @@ app.get(
   UserController.getAllUser,
   middleware.isAdmin
 );
-app.put(
-  "/api/v1/update/user/:id",
-  UserController.updateUser,
-  middleware.authentication
-);
-app.delete(
-  "/api/v1/delete/user/:id",
-  middleware.authentication,
-  UserController.deleteUser,
-  middleware.isAdmin
-);
+app.put("/api/v1/update/user/:userId", UserController.updateUser);
+app.delete("/api/v1/delete/user/:userId", UserController.deleteUser);
 app.get(
   "/api/v1/current/user",
   middleware.authentication,
@@ -77,13 +69,18 @@ app.get("/api/v4/raspi/:samId/config", RaspiController.getConfig);
 
 // schedule
 app.post("/api/v5/schedule/generate", ScheduleController.createSchedule);
-app.put("/api/v5/schedule/:id/stop", ScheduleController.stopSchedule);
+app.put("/api/v5/schedule/stop", ScheduleController.stopSchedule);
 app.get("/api/v5/schedule/get", ScheduleController.getAllSchedules);
+app.get("/api/v5/schedule/load", ScheduleController.loadSchedules);
+app.get("/api/v5/schedule/active", ScheduleController.listActiveSchedules);
 
 // email
 app.post("/api/v6/email/create", EmailController.createEmail);
 app.get("/api/v6/emails/get", EmailController.getEmails);
 app.get("/api/v6/email/get/:emailName", EmailController.getEmailByEmail);
+
+// logs
+app.get("/api/v7/logs/get", LogController.getAllLogs);
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`listening on http://localhost:${PORT}`);

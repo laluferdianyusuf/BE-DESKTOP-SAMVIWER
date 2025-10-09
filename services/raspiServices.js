@@ -7,6 +7,7 @@ const path = require("path");
 const axios = require("axios");
 const { pipeline } = require("stream/promises");
 const { uploadToGCS } = require("../utils/gcs");
+const LogsServices = require("./logServices");
 
 const LOCAL_SAVE_PATH = "D:/VideosRaspi";
 
@@ -79,7 +80,6 @@ class RaspiServices {
       const configResult = await RaspiRepositories.getConfig({
         ip: device.deviceIP,
       });
-
       const speedLimit = Number(configResult?.speed_limit);
 
       const result = await RaspiRepositories.collectData({
@@ -88,41 +88,52 @@ class RaspiServices {
 
       const dataCollected = [];
       const samFolder = path.join(LOCAL_SAVE_PATH, samId);
-      if (!fs.existsSync(samFolder)) {
+      if (!fs.existsSync(samFolder))
         fs.mkdirSync(samFolder, { recursive: true });
-      }
 
       for (const item of result) {
-        let categories = item.speed > speedLimit ? "over speed" : "normal";
+        const categories = item.speed > speedLimit ? "over speed" : "normal";
 
         const existing = await DataRepositories.findOneVideo({
-          videoUrl: item.videoUrl,
+          videoUrl: item.videoUrl || "",
         });
-
         if (existing) {
-          console.log(`Skip: ${item.videoUrl} sudah ada`);
+          console.log(`Skip duplicate: ${item.videoUrl}`);
           continue;
         }
 
-        const fileName = `${Date.now()}_${path.basename(item.videoUrl)}`;
-        const localPath = path.join(samFolder, fileName);
+        let gcsUrl = "tidak ada url";
+        let localPath = "tidak ada file";
 
-        const res = await axios({
-          method: "get",
-          url: item.videoUrl,
-          responseType: "stream",
-        });
-        await pipeline(res.data, fs.createWriteStream(localPath));
+        if (item.videoUrl && /^https?:\/\//.test(item.videoUrl)) {
+          try {
+            const fileName = `${Date.now()}_${path.basename(item.videoUrl)}`;
+            localPath = path.join(samFolder, fileName);
 
-        const gcsPath = `${samId}/${fileName}`;
-        const gcsUrl = await uploadToGCS(localPath, gcsPath);
+            const res = await axios({
+              method: "get",
+              url: item.videoUrl,
+              responseType: "stream",
+            });
+            await pipeline(res.data, fs.createWriteStream(localPath));
+
+            const gcsPath = `${samId}/${fileName}`;
+            gcsUrl = await uploadToGCS(localPath, gcsPath);
+          } catch (error) {
+            console.log(
+              `Failed to process video ${item.videoUrl}: ${error.message}`
+            );
+            gcsUrl = "tidak ada url";
+            localPath = "tidak ada file";
+          }
+        }
 
         const saveData = await DataRepositories.createVideo({
           deviceId: device.deviceId,
-          samId: samId,
+          samId,
           speed: item.speed,
           video: gcsUrl,
-          localVideo: `${LOCAL_SAVE_PATH}/videos/${samId}/${fileName}`,
+          localVideo: localPath,
           category: categories,
           createdAt: item.timestamp,
         });
@@ -130,10 +141,14 @@ class RaspiServices {
         dataCollected.push(saveData);
       }
 
+      await LogsServices.createLog({
+        activity: `Collected ${dataCollected.length} logs and videos from device ${samId}`,
+      });
+
       return {
         status: true,
         status_code: 200,
-        message: "Data collected and uploaded to cloud storage",
+        message: "All logs saved to database, video or not",
         data: dataCollected,
       };
     } catch (error) {
@@ -169,11 +184,17 @@ class RaspiServices {
     }
 
     try {
+      const configResult = await RaspiRepositories.getConfig({
+        ip: device.deviceIP,
+      });
+      const speedLimit = Number(configResult?.speed_limit);
       const result = await RaspiRepositories.configureDevice({
         ip: device.deviceIP,
         config,
       });
-
+      await LogsServices.createLog({
+        activity: `Configure speed threshold ${samId} from ${speedLimit} to ${config}`,
+      });
       return {
         status: true,
         status_code: 200,
@@ -181,8 +202,6 @@ class RaspiServices {
         data: result,
       };
     } catch (error) {
-      console.log(error);
-
       return {
         status: false,
         status_code: 500,

@@ -23,18 +23,21 @@ class UserRepositories {
     });
     return existingUsername;
   }
-  static async updateUser({ userId, username, password }) {
+  static async updateUser({ userId, username, password, credential }) {
     const updateUser = await users.update(
       {
         username: username,
         password: password,
+        credential: credential,
       },
       { where: { userId: userId } }
     );
     return updateUser;
   }
   static async listUser() {
-    const listUser = await users.findAll();
+    const listUser = await users.findAll({
+      order: [["id", "ASC"]],
+    });
     return listUser;
   }
   static async deleteUser({ userId }) {
@@ -43,6 +46,11 @@ class UserRepositories {
   }
   static async findOneUser({ id }) {
     const getUser = await users.findOne({ where: { id: id } });
+    return getUser;
+  }
+
+  static async findOneUserId({ userId }) {
+    const getUser = await users.findOne({ where: { userId: userId } });
     return getUser;
   }
 }

@@ -69,7 +69,7 @@ class UserServices {
       if (!getUser) {
         return {
           status: false,
-          status_code: 401,
+          status_code: 404,
           message: "Can't find user",
           data: { user: null },
         };
@@ -108,20 +108,23 @@ class UserServices {
       };
     }
   }
-  static async updateUser({ userId, username, password }) {
+  static async updateUser({ userId, username, password, credential }) {
     try {
-      const getUser = await UserRepositories.findOneUser({ id });
+      const getUser = await UserRepositories.findOneUserId({ userId });
+
       if (!getUser) {
         return {
           status: false,
-          status_code: 401,
+          status_code: 404,
           message: "Can't find user",
           data: { user: null },
         };
       }
       const updateUser = await UserRepositories.updateUser({
+        userId,
         username,
-        password,
+        password: await bcrypt.hash(password, JWT.SALT_ROUND),
+        credential,
       });
       return {
         status: true,
@@ -140,16 +143,16 @@ class UserServices {
   }
   static async deleteUser({ userId }) {
     try {
-      const getUser = await UserRepositories.findOneUser({ userId });
+      const getUser = await UserRepositories.findOneUserId({ userId });
       if (!getUser) {
         return {
           status: false,
-          status_code: 401,
+          status_code: 404,
           message: "Can't find user to delete",
           data: { user: null },
         };
       }
-      const deletedUser = await UserRepositories.deleteUser();
+      const deletedUser = await UserRepositories.deleteUser({ userId });
       return {
         status: true,
         status_code: 200,
@@ -157,6 +160,8 @@ class UserServices {
         data: { user: deletedUser },
       };
     } catch (error) {
+      console.log(error);
+
       return {
         status: false,
         status_code: 500,
