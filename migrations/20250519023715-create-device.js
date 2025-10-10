@@ -42,6 +42,12 @@ module.exports = {
       location: {
         type: Sequelize.STRING,
       },
+      utc: {
+        type: Sequelize.BOOLEAN,
+      },
+      timezone: {
+        type: Sequelize.INTEGER,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

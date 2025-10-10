@@ -14,6 +14,8 @@ class DeviceServices {
     cameraRootFolder,
     cameraType,
     location,
+    utc,
+    timezone,
   }) {
     try {
       if (
@@ -59,6 +61,8 @@ class DeviceServices {
         cameraRootFolder,
         cameraType,
         location,
+        utc,
+        timezone,
       });
       return {
         status: true,

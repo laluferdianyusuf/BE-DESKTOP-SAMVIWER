@@ -14,6 +14,8 @@ class DeviceRepositories {
     cameraRootFolder,
     cameraType,
     location,
+    utc,
+    timezone,
   }) {
     return await device.create({
       deviceId,
@@ -27,6 +29,8 @@ class DeviceRepositories {
       cameraRootFolder,
       cameraType,
       location,
+      utc,
+      timezone,
     });
   }
   static async updateDevice({

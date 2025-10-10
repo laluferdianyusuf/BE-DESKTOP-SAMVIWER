@@ -12,6 +12,8 @@ const addDevice = async (req, res) => {
     cameraRootFolder,
     cameraType,
     location,
+    utc,
+    timezone,
   } = req.body;
   const { status, status_code, message, data } = await DeviceServices.addDevice(
     {
@@ -25,6 +27,8 @@ const addDevice = async (req, res) => {
       cameraRootFolder,
       cameraType,
       location,
+      utc,
+      timezone,
     }
   );
   res.status(status_code).send({

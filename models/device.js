@@ -30,6 +30,8 @@ module.exports = (sequelize, DataTypes) => {
       cameraRootFolder: DataTypes.STRING,
       cameraType: DataTypes.STRING,
       location: DataTypes.STRING,
+      utc: DataTypes.BOOLEAN,
+      timezone: DataTypes.INTEGER,
     },
     {
       sequelize,
