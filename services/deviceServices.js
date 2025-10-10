@@ -36,8 +36,6 @@ class DeviceServices {
         };
       }
 
-      console.log(deviceIP);
-
       const existingDevice = await DeviceRepositories.existingDevice({
         samId,
       });
@@ -69,7 +67,6 @@ class DeviceServices {
         data: { device: addDevice },
       };
     } catch (error) {
-      console.log(error);
       return {
         status: false,
         status_code: 500,
@@ -98,23 +95,40 @@ class DeviceServices {
       if (!getDevice) {
         return {
           status: false,
-          status_code: 401,
+          status_code: 404,
           message: "Can't find device",
           data: { device: null },
         };
       }
+
+      const keepOld = (value, oldValue) => {
+        if (value === undefined || value === null) return oldValue;
+        if (typeof value === "string" && value.trim() === "") return oldValue;
+        return value;
+      };
+
+      const updateData = {
+        deviceId,
+        samId: keepOld(samId, getDevice.samId),
+        deviceIP: keepOld(deviceIP, getDevice.deviceIP),
+        deviceUsername: keepOld(deviceUsername, getDevice.deviceUsername),
+        deviceRootFolder: keepOld(deviceRootFolder, getDevice.deviceRootFolder),
+        cameraIP: keepOld(cameraIP, getDevice.cameraIP),
+        cameraUsername: keepOld(cameraUsername, getDevice.cameraUsername),
+        cameraPassword: keepOld(cameraPassword, getDevice.cameraPassword),
+        cameraRootFolder: keepOld(cameraRootFolder, getDevice.cameraRootFolder),
+        cameraType: keepOld(cameraType, getDevice.cameraType),
+        location: keepOld(location, getDevice.location),
+      };
+      const toUpdate = {};
+      Object.keys(updateData).forEach((k) => {
+        if (k === "deviceId") return;
+        if (updateData[k] !== getDevice[k]) toUpdate[k] = updateData[k];
+      });
+
       const updateDevice = await DeviceRepositories.updateDevice({
         deviceId,
-        samId,
-        deviceIP,
-        deviceUsername,
-        deviceRootFolder,
-        cameraIP,
-        cameraUsername,
-        cameraPassword,
-        cameraRootFolder,
-        cameraType,
-        location,
+        ...toUpdate,
       });
       return {
         status: true,
@@ -123,7 +137,6 @@ class DeviceServices {
         data: { device: updateDevice },
       };
     } catch (error) {
-      console.log(error);
       return {
         status: false,
         status_code: 500,

@@ -20,6 +20,7 @@ const RaspiController = require("./controllers/raspiController");
 const ScheduleController = require("./controllers/scheduleController");
 const EmailController = require("./controllers/emailController");
 const LogController = require("./controllers/logController");
+const LocationController = require("./controllers/locationController");
 const middleware = require("./middleware/auth");
 
 app.get("/", async (req, res) => {
@@ -81,6 +82,12 @@ app.get("/api/v6/email/get/:emailName", EmailController.getEmailByEmail);
 
 // logs
 app.get("/api/v7/logs/get", LogController.getAllLogs);
+
+// location
+app.post("/api/v8/location/create", LocationController.createLocation);
+app.get("/api/v8/location/get", LocationController.getALlLocation);
+app.put("/api/v8/location/update/:samId", LocationController.updateLocation);
+app.delete("/api/v8/location/delete/:samId", LocationController.deleteLocation);
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`listening on http://localhost:${PORT}`);
