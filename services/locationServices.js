@@ -53,7 +53,7 @@ class LocationService {
     }
   }
 
-  static async updateLocation({ samId }) {
+  static async updateLocation({ samId, loc }) {
     try {
       const getLoc = await LocationRepository.getBySamId({ samId });
 
@@ -66,7 +66,10 @@ class LocationService {
         };
       }
 
-      const update = await LocationRepository.updateLocation({ samId: samId });
+      const update = await LocationRepository.updateLocation({
+        samId: samId,
+        loc,
+      });
       return {
         status: true,
         status_code: 200,

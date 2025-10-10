@@ -32,8 +32,9 @@ class LocationController {
 
   static async updateLocation(req, res) {
     const { samId } = req.params;
+    const { loc } = req.body;
     const { status, status_code, message, data } =
-      await LocationService.updateLocation({ samId });
+      await LocationService.updateLocation({ samId, loc });
 
     res.status(status_code).send({
       status,

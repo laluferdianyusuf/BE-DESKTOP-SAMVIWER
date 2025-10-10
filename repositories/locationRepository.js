@@ -19,24 +19,18 @@ class LocationRepository {
     });
   }
 
-  static async updateLocation({ samId }) {
-    await location.update({
-      where: {
-        samId: samId,
-      },
-    });
+  static async updateLocation({ samId, loc }) {
+    await location.update({ location: loc }, { where: { samId } });
 
-    return await location.findByPk(samId);
+    return await location.findOne({ where: { samId } });
   }
 
   static async deleteLocation({ samId }) {
-    await location.destroy({
-      where: {
-        samId: samId,
-      },
+    const deleted = await location.destroy({
+      where: { samId },
     });
 
-    return await location.findByPk(samId);
+    return deleted > 0;
   }
 }
 
