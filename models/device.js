@@ -15,9 +15,6 @@ module.exports = (sequelize, DataTypes) => {
       device.hasMany(models.data, {
         foreignKey: "samId",
       });
-      device.hasMany(models.location, {
-        foreignKey: "samId",
-      });
     }
   }
   device.init(

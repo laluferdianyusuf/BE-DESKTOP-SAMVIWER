@@ -12,9 +12,6 @@ module.exports = {
       location: {
         type: Sequelize.STRING,
       },
-      samId: {
-        type: Sequelize.STRING,
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

@@ -1,31 +1,20 @@
-const DeviceRepositories = require("../repositories/deviceRepositories");
 const LocationRepository = require("../repositories/locationRepository");
 
 class LocationService {
-  static async createLocation({ samId, loc }) {
+  static async createLocation({ loc }) {
     try {
-      const existingLocation = await LocationRepository.getBySamId({ samId });
-
-      const existingDevice = await DeviceRepositories.existingDevice({ samId });
-
-      if (!existingDevice) {
-        return {
-          status: false,
-          status_code: 404,
-          message: `Device with ${samId} not found`,
-          data: null,
-        };
-      }
+      const existingLocation = await LocationRepository.getByLocation({ loc });
 
       if (existingLocation) {
         return {
           status: false,
           status_code: 403,
-          message: `Location already exist for ${samId}`,
+          message: "Location already exist",
           data: null,
         };
       }
-      if (!samId | !loc) {
+
+      if (!loc) {
         return {
           status: false,
           status_code: 403,
@@ -35,7 +24,6 @@ class LocationService {
       }
 
       const create = await LocationRepository.createLocation({
-        samId,
         loc,
       });
 
@@ -75,21 +63,21 @@ class LocationService {
     }
   }
 
-  static async updateLocation({ samId, loc }) {
+  static async updateLocation({ id, loc }) {
     try {
-      const getLoc = await LocationRepository.getBySamId({ samId });
+      const getLoc = await LocationRepository.getById({ id });
 
       if (!getLoc) {
         return {
           status: false,
           status_code: 404,
-          message: "No devices found",
+          message: "No location found",
           data: null,
         };
       }
 
       const update = await LocationRepository.updateLocation({
-        samId: samId,
+        id: id,
         loc,
       });
       return {
@@ -108,9 +96,9 @@ class LocationService {
     }
   }
 
-  static async deleteLocation({ samId }) {
+  static async deleteLocation({ id }) {
     try {
-      const getLoc = await LocationRepository.getBySamId({ samId });
+      const getLoc = await LocationRepository.getById({ id });
 
       if (!getLoc) {
         return {
@@ -121,12 +109,12 @@ class LocationService {
         };
       }
 
-      const update = await LocationRepository.deleteLocation({ samId: samId });
+      const deleted = await LocationRepository.deleteLocation({ id: id });
       return {
         status: true,
         status_code: 200,
         message: "Location deleted successfully",
-        data: update,
+        data: deleted,
       };
     } catch (error) {
       return {

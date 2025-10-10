@@ -1,33 +1,41 @@
 const { location } = require("../models");
 
 class LocationRepository {
-  static async createLocation({ samId, loc }) {
-    return await location.create({ samId: samId, location: loc });
+  static async createLocation({ loc }) {
+    return await location.create({ location: loc });
   }
 
   static async getAllLocation() {
     return await location.findAll({
-      order: [["samId", "ASC"]],
+      order: [["location", "ASC"]],
     });
   }
 
-  static async getBySamId({ samId }) {
+  static async getById({ id }) {
     return await location.findOne({
       where: {
-        samId: samId,
+        id: id,
       },
     });
   }
 
-  static async updateLocation({ samId, loc }) {
-    await location.update({ location: loc }, { where: { samId } });
-
-    return await location.findOne({ where: { samId } });
+  static async getByLocation({ loc }) {
+    return await location.findOne({
+      where: {
+        location: loc,
+      },
+    });
   }
 
-  static async deleteLocation({ samId }) {
+  static async updateLocation({ id, loc }) {
+    await location.update({ location: loc }, { where: { id } });
+
+    return await location.findOne({ where: { id } });
+  }
+
+  static async deleteLocation({ id }) {
     const deleted = await location.destroy({
-      where: { samId },
+      where: { id },
     });
 
     return deleted > 0;

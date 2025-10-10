@@ -2,11 +2,10 @@ const LocationService = require("../services/locationServices");
 
 class LocationController {
   static async createLocation(req, res) {
-    const { samId, loc } = req.body;
+    const { loc } = req.body;
 
     const { status, status_code, message, data } =
       await LocationService.createLocation({
-        samId,
         loc,
       });
 
@@ -31,10 +30,10 @@ class LocationController {
   }
 
   static async updateLocation(req, res) {
-    const { samId } = req.params;
+    const { id } = req.params;
     const { loc } = req.body;
     const { status, status_code, message, data } =
-      await LocationService.updateLocation({ samId, loc });
+      await LocationService.updateLocation({ id, loc });
 
     res.status(status_code).send({
       status,
@@ -45,9 +44,9 @@ class LocationController {
   }
 
   static async deleteLocation(req, res) {
-    const { samId } = req.params;
+    const { id } = req.params;
     const { status, status_code, message, data } =
-      await LocationService.deleteLocation({ samId });
+      await LocationService.deleteLocation({ id });
 
     res.status(status_code).send({
       status,

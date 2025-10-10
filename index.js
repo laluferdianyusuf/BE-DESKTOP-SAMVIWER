@@ -88,8 +88,8 @@ app.get("/api/v7/logs/get", LogController.getAllLogs);
 // location
 app.post("/api/v8/location/create", LocationController.createLocation);
 app.get("/api/v8/location/get", LocationController.getALlLocation);
-app.put("/api/v8/location/update/:samId", LocationController.updateLocation);
-app.delete("/api/v8/location/delete/:samId", LocationController.deleteLocation);
+app.put("/api/v8/location/update/:id", LocationController.updateLocation);
+app.delete("/api/v8/location/delete/:id", LocationController.deleteLocation);
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`listening on http://localhost:${PORT}`);
