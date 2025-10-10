@@ -15,7 +15,7 @@ class DeviceRepositories {
     cameraType,
     location,
   }) {
-    const addDevice = await device.create({
+    return await device.create({
       deviceId,
       samId,
       deviceIP,
@@ -28,7 +28,6 @@ class DeviceRepositories {
       cameraType,
       location,
     });
-    return addDevice;
   }
   static async updateDevice({
     deviceId,
@@ -43,7 +42,7 @@ class DeviceRepositories {
     cameraType,
     location,
   }) {
-    const updateDevice = await device.update(
+    return await device.update(
       {
         samId,
         deviceIP,
@@ -58,30 +57,25 @@ class DeviceRepositories {
       },
       { where: { deviceId: deviceId } }
     );
-    return updateDevice;
   }
   static async existingDevice({ samId }) {
-    const existingDevice = await device.findOne({ where: { samId: samId } });
-    return existingDevice;
+    return await device.findOne({ where: { samId: samId } });
   }
 
   static async existingDeviceId({ deviceId }) {
-    const existingDevice = await device.findOne({
+    return await device.findOne({
       where: { deviceId: deviceId },
     });
-    return existingDevice;
   }
 
   static async getAllDevice() {
-    const getAllDevice = await device.findAll();
-    return getAllDevice;
+    return await device.findAll();
   }
 
   static async deleteDevice({ samId }) {
-    const deletedDevice = await device.destroy({
+    return await device.destroy({
       where: { samId: samId },
     });
-    return deletedDevice;
   }
 }
 module.exports = DeviceRepositories;

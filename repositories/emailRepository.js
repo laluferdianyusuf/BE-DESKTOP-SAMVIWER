@@ -18,6 +18,12 @@ class EmailRepository {
     });
   }
 
+  static async getEmailById({ id }) {
+    return await email.findOne({
+      where: { id },
+    });
+  }
+
   static async getEmails({ sort = "id", order = "ASC" }) {
     const allowedSorts = ["id", "emailName"];
     const allowedOrders = ["ASC", "DESC"];
@@ -30,6 +36,29 @@ class EmailRepository {
     return await email.findAll({
       order: [[sortField, sortOrder]],
     });
+  }
+
+  static async updateEmail({ id, emailName }) {
+    await email.update(
+      {
+        emailName,
+      },
+      {
+        where: {
+          id,
+        },
+      }
+    );
+
+    return await email.findOne({ id });
+  }
+
+  static async deleteEmail({ id }) {
+    const deleted = await email.destroy({
+      where: { id },
+    });
+
+    return deleted > 0;
   }
 }
 

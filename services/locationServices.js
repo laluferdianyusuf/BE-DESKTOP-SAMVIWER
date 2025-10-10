@@ -1,8 +1,30 @@
+const DeviceRepositories = require("../repositories/deviceRepositories");
 const LocationRepository = require("../repositories/locationRepository");
 
 class LocationService {
   static async createLocation({ samId, loc }) {
     try {
+      const existingLocation = await LocationRepository.getBySamId({ samId });
+
+      const existingDevice = await DeviceRepositories.existingDevice({ samId });
+
+      if (!existingDevice) {
+        return {
+          status: false,
+          status_code: 404,
+          message: `Device with ${samId} not found`,
+          data: null,
+        };
+      }
+
+      if (existingLocation) {
+        return {
+          status: false,
+          status_code: 403,
+          message: `Location already exist for ${samId}`,
+          data: null,
+        };
+      }
       if (!samId | !loc) {
         return {
           status: false,

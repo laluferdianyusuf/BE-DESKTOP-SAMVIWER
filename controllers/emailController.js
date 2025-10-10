@@ -37,6 +37,33 @@ class EmailController {
       data: data,
     });
   }
+
+  static async updateEmail(req, res) {
+    const { id } = req.params;
+    const { emailName } = req.body;
+    const { status, status_code, message, data } =
+      await EmailService.updateEmail({ id, emailName });
+
+    res.status(status_code).send({
+      status,
+      status_code,
+      message,
+      data,
+    });
+  }
+
+  static async deleteEmail(req, res) {
+    const { id } = req.params;
+    const { status, status_code, message, data } =
+      await EmailService.deleteEmail({ id });
+
+    res.status(status_code).send({
+      status,
+      status_code,
+      message,
+      data,
+    });
+  }
 }
 
 module.exports = EmailController;

@@ -79,6 +79,8 @@ app.get("/api/v5/schedule/active", ScheduleController.listActiveSchedules);
 app.post("/api/v6/email/create", EmailController.createEmail);
 app.get("/api/v6/emails/get", EmailController.getEmails);
 app.get("/api/v6/email/get/:emailName", EmailController.getEmailByEmail);
+app.put("/api/v6/email/update/:id", EmailController.updateEmail);
+app.delete("/api/v6/email/delete/:id", EmailController.deleteEmail);
 
 // logs
 app.get("/api/v7/logs/get", LogController.getAllLogs);

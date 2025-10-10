@@ -87,6 +87,69 @@ class EmailService {
       };
     }
   }
+
+  static async updateEmail({ id, emailName }) {
+    try {
+      const getEmail = await EmailRepository.getEmailById({ id });
+
+      if (!getEmail) {
+        return {
+          status: false,
+          status_code: 404,
+          message: "No email found",
+          data: null,
+        };
+      }
+
+      const update = await EmailRepository.updateEmail({
+        id: id,
+        emailName,
+      });
+      return {
+        status: true,
+        status_code: 200,
+        message: "Email updated successfully",
+        data: update,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        status_code: 500,
+        message: "Server Error" + error,
+        data: null,
+      };
+    }
+  }
+
+  static async deleteEmail({ id }) {
+    try {
+      const getEmail = await EmailRepository.getEmailById({ id });
+
+      if (!getEmail) {
+        return {
+          status: false,
+          status_code: 404,
+          message: "No email found",
+          data: null,
+        };
+      }
+
+      const update = await EmailRepository.deleteEmail({ id: id });
+      return {
+        status: true,
+        status_code: 200,
+        message: "Email deleted successfully",
+        data: update,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        status_code: 500,
+        message: "Server Error" + error,
+        data: null,
+      };
+    }
+  }
 }
 
 module.exports = EmailService;
