@@ -15,17 +15,11 @@ module.exports = (sequelize, DataTypes) => {
       device.hasMany(models.data, {
         foreignKey: "samId",
       });
-
-      device.belongsToMany(models.users, {
-        through: "user_devices",
-        foreignKey: "deviceId",
-        otherKey: "userId",
-      });
     }
   }
   device.init(
     {
-      deviceId: DataTypes.STRING,
+      deviceId: { type: DataTypes.STRING, allowNull: false, primaryKey: true },
       samId: DataTypes.STRING,
       deviceIP: DataTypes.STRING,
       deviceUsername: DataTypes.STRING,

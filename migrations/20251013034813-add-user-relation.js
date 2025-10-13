@@ -10,21 +10,21 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       userId: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         allowNull: false,
         references: {
           model: "users",
-          key: "id",
+          key: "userId",
         },
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
       },
       deviceId: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         allowNull: false,
         references: {
           model: "devices",
-          key: "id",
+          key: "deviceId",
         },
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
@@ -42,7 +42,7 @@ module.exports = {
     });
   },
 
-  async down(queryInterface, Sequelize) {
+  async down(queryInterface) {
     await queryInterface.dropTable("user_devices");
   },
 };

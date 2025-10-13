@@ -13,7 +13,10 @@ module.exports = {
         type: Sequelize.FLOAT,
       },
       video: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
+      },
+      localVideo: {
+        type: Sequelize.TEXT,
       },
       deviceId: {
         type: Sequelize.STRING,

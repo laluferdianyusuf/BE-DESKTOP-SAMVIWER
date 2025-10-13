@@ -17,18 +17,38 @@ const UserDeviceService = {
         };
       }
 
-      const relation = await UserDeviceRepository.assignDeviceToUser({
-        userId,
-        deviceId,
-      });
+      if (Array.isArray(deviceId)) {
+        const result = [];
 
-      return {
-        status: true,
-        status_code: 201,
-        message: `Device successfully assigned to user`,
-        data: relation,
-      };
+        for (const id of deviceId) {
+          const relation = await UserDeviceRepository.assignDeviceToUser({
+            userId,
+            deviceId: id,
+          });
+
+          result.push(relation);
+        }
+        return {
+          status: true,
+          status_code: 201,
+          message: `Device successfully assigned to user`,
+          data: result,
+        };
+      } else {
+        const relation = await UserDeviceRepository.assignDeviceToUser({
+          userId,
+          deviceId,
+        });
+        return {
+          status: true,
+          status_code: 201,
+          message: `Device assigned successfully`,
+          data: relation,
+        };
+      }
     } catch (error) {
+      console.log(error);
+
       return {
         status: false,
         status_code: 500,

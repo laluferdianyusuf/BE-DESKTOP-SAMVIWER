@@ -1,8 +1,8 @@
-const { users, device, user_devices } = require("../models");
+const { users, device, user_device } = require("../models");
 
 const UserDeviceRepository = {
   async assignDeviceToUser({ userId, deviceId }) {
-    return await user_devices.create({ userId, deviceId });
+    return await user_device.create({ userId, deviceId });
   },
 
   async getDevicesByUser(userId) {
