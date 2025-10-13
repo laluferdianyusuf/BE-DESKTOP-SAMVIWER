@@ -1,4 +1,3 @@
-const { where } = require("sequelize");
 const { device } = require("../models");
 
 class DeviceRepositories {

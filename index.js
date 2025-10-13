@@ -21,6 +21,7 @@ const ScheduleController = require("./controllers/scheduleController");
 const EmailController = require("./controllers/emailController");
 const LogController = require("./controllers/logController");
 const LocationController = require("./controllers/locationController");
+const UserDeviceController = require("./controllers/userDeviceController");
 const middleware = require("./middleware/auth");
 
 app.get("/", async (req, res) => {
@@ -90,6 +91,21 @@ app.post("/api/v8/location/create", LocationController.createLocation);
 app.get("/api/v8/location/get", LocationController.getALlLocation);
 app.put("/api/v8/location/update/:id", LocationController.updateLocation);
 app.delete("/api/v8/location/delete/:id", LocationController.deleteLocation);
+
+// user device relation
+app.post("/api/v9/user-device/assign", UserDeviceController.assignDeviceToUser);
+app.get(
+  "/api/v9/user-device/get/device/:userId",
+  UserDeviceController.getDevicesByUser
+);
+app.delete(
+  "/api/v9/user-device/delete",
+  UserDeviceController.removeDeviceFromUser
+);
+app.get(
+  "/api/v9/user-device/get/user/:deviceId",
+  UserDeviceController.getUsersByDevice
+);
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`listening on http://localhost:${PORT}`);
