@@ -89,16 +89,16 @@ const UserDeviceService = {
 
   async removeDeviceFromUser({ userId, deviceId }) {
     try {
-      const deleted = await UserDeviceRepository.removeDeviceFromUser({
+      const deletedCount = await UserDeviceRepository.removeDeviceFromUser({
         userId,
         deviceId,
       });
 
-      if (deleted === 0) {
+      if (deletedCount === 0) {
         return {
           status: false,
           status_code: 404,
-          message: `Relation between User ${userId} and Device ${deviceId} not found`,
+          message: `No relations found for User ${userId} with provided device(s)`,
           data: null,
         };
       }
@@ -106,19 +106,22 @@ const UserDeviceService = {
       return {
         status: true,
         status_code: 200,
-        message: `Device successfully removed from user`,
-        data: null,
+        message: `Successfully removed ${deletedCount} device(s) from user ${userId}`,
+        data: {
+          userId,
+          deviceId,
+          deletedCount,
+        },
       };
     } catch (error) {
       return {
         status: false,
         status_code: 500,
-        message: `Failed to remove device from user: ${error.message}`,
+        message: `Failed to remove device(s) from user: ${error.message}`,
         data: null,
       };
     }
   },
-
   async getUsersByDevice(deviceId) {
     try {
       const device = await DeviceRepositories.existingDeviceId({ deviceId });

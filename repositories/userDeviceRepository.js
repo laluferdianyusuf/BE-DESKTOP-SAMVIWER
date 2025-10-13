@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const { users, device, user_device } = require("../models");
 
 const UserDeviceRepository = {
@@ -17,8 +18,13 @@ const UserDeviceRepository = {
   },
 
   async removeDeviceFromUser({ userId, deviceId }) {
-    return await user_devices.destroy({
-      where: { userId, deviceId },
+    return await user_device.destroy({
+      where: {
+        userId,
+        deviceId: {
+          [Op.in]: deviceId,
+        },
+      },
     });
   },
 

@@ -35,7 +35,7 @@ const UserDeviceController = {
     const { userId, deviceId } = req.body;
 
     const { status, status_code, message, data } =
-      await UserDeviceService.removeDeviceFromUser(userId, deviceId);
+      await UserDeviceService.removeDeviceFromUser({ userId, deviceId });
 
     res.status(status_code).send({
       status,
