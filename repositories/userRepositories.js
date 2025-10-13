@@ -36,7 +36,7 @@ class UserRepositories {
   }
   static async listUser() {
     const listUser = await users.findAll({
-      order: [["id", "ASC"]],
+      order: [["userId", "ASC"]],
     });
     return listUser;
   }
@@ -44,11 +44,6 @@ class UserRepositories {
     const deleteUser = await users.destroy({ where: { userId: userId } });
     return deleteUser;
   }
-  static async findOneUser({ id }) {
-    const getUser = await users.findOne({ where: { id: id } });
-    return getUser;
-  }
-
   static async findOneUserId({ userId }) {
     const getUser = await users.findOne({ where: { userId: userId } });
     return getUser;

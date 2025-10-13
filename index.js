@@ -36,8 +36,8 @@ app.post("/api/v1/login/user", UserController.login);
 app.get(
   "/api/v1/getAll/user",
   // middleware.authentication,
-  UserController.getAllUser,
-  middleware.isAdmin
+  UserController.getAllUser
+  // middleware.isAdmin
 );
 app.put("/api/v1/update/user/:userId", UserController.updateUser);
 app.delete("/api/v1/delete/user/:userId", UserController.deleteUser);
