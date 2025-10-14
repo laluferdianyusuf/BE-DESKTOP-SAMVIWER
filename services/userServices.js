@@ -74,6 +74,15 @@ class UserServices {
           data: { user: null },
         };
       }
+      if (credential !== getUser.credential) {
+        return {
+          status: false,
+          status_code: 403,
+          message: `You're login with ${credential}, which is wrong!`,
+          data: { user: null },
+        };
+      }
+
       const isPasswordCorrect = bcrypt.compareSync(password, getUser.password);
       if (!isPasswordCorrect) {
         return {

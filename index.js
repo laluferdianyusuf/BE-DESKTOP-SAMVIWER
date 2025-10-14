@@ -35,11 +35,16 @@ app.post("/api/v1/register/user", UserController.createUser);
 app.post("/api/v1/login/user", UserController.login);
 app.get(
   "/api/v1/getAll/user",
-  // middleware.authentication,
-  UserController.getAllUser
-  // middleware.isAdmin
+  middleware.authentication,
+  UserController.getAllUser,
+  middleware.isAdmin
 );
-app.put("/api/v1/update/user/:userId", UserController.updateUser);
+app.put(
+  "/api/v1/update/user/:userId",
+  middleware.authentication,
+  UserController.updateUser,
+  middleware.isAdmin
+);
 app.delete("/api/v1/delete/user/:userId", UserController.deleteUser);
 app.get(
   "/api/v1/current/user",

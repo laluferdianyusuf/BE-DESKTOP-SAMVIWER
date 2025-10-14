@@ -49,13 +49,16 @@ const authentication = async (req, res, next) => {
 };
 const isAdmin = async (req, res, next) => {
   const user = req.users;
-  if (user && user.credential === CREDENTIAL.ADMIN) {
+  if (
+    (user && user.credential === CREDENTIAL.ADMIN) ||
+    user.credential === CREDENTIAL.SUPERADMIN
+  ) {
     return next();
   }
   return res.status(403).send({
     status: false,
     status_code: 403,
-    message: "Must be an admin for access this page",
+    message: "Must be an admin or superadmin to access this page",
     data: { user: null },
   });
 };
