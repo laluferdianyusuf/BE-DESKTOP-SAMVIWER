@@ -36,6 +36,11 @@ class RaspiServices {
       const isConnected =
         raspiStatus?.status === "connected" && cameraStatus?.connected === true;
 
+      await LogsServices.createLog({
+        activity: `Device ${
+          isConnected ? "Connection successful" : "Connection failed"
+        }`,
+      });
       return {
         status: isConnected,
         status_code: 200,
@@ -46,6 +51,9 @@ class RaspiServices {
         },
       };
     } catch (error) {
+      await LogsServices.createLog({
+        activity: `Device error ${error.message}`,
+      });
       return {
         status: false,
         status_code: 500,

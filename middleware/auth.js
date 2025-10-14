@@ -4,8 +4,9 @@ const UserRepositories = require("../repositories/userRepositories");
 
 const authentication = async (req, res, next) => {
   try {
-    const autHeader = req.header.authorization;
-    if (!autHeader || !autHeader.startWith("Bearer ")) {
+    const autHeader = req.headers.authorization;
+
+    if (!autHeader || !autHeader.startsWith("Bearer ")) {
       return res.status(401).send({
         status: false,
         status_code: 401,
@@ -15,9 +16,9 @@ const authentication = async (req, res, next) => {
     }
     const token = autHeader.split(" ")[1];
     if (!token) {
-      return res.status(401).send({
+      return res.status(404).send({
         status: false,
-        status_code: 401,
+        status_code: 404,
         message: "Can't find token",
         data: { user: null },
       });
