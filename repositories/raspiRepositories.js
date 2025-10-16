@@ -30,7 +30,7 @@ class RaspiRepositories {
 
   static async getConfig({ ip }) {
     try {
-      const response = await axios.get(`http://${ip}:5001/api/config`);
+      const response = await axios.get(`http://${ip}:5001/api/network`);
       return response.data;
     } catch (error) {
       throw new Error(`Failed to get config at ${ip}: ${error.message}`);
