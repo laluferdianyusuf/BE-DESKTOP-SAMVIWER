@@ -1,33 +1,82 @@
 const ScheduleRepository = require("../repositories/scheduleRepository");
+const DeviceRepository = require("../repositories/deviceRepositories");
 const RaspiServices = require("./raspiServices");
 const LogsServices = require("./logServices");
 const cron = require("node-cron");
+const moment = require("moment-timezone");
 
 class ScheduleService {
   static jobs = {};
+
+  static convertLocalToUTC(timeString, timezone) {
+    const [hour, minute] = timeString.split(":");
+    const local = moment.tz({ hour, minute }, timezone);
+    const utcTime = local.utc().format("HH:mm");
+    return utcTime;
+  }
+
+  static generateCronExp(timeString, type) {
+    const [hour, minute] = timeString.split(":");
+
+    if (type === "daily") {
+      return `${minute} ${hour} * * *`;
+    }
+    if (type === "12h" || type === "per12h") {
+      return `${minute} ${hour}-23/12 * * *`;
+    }
+
+    throw new Error(`Unsupported schedule type: ${type}`);
+  }
+
+  static async createJobForDevice(scheduleId, samId, startTime, type) {
+    const device = await DeviceRepository.findBySamId(samId);
+    if (!device) {
+      console.warn(`[Scheduler] Device ${samId} tidak ditemukan`);
+      return;
+    }
+
+    const timezone = device.utc ? "UTC" : device.timezone || "UTC";
+
+    let cronTime = startTime;
+    if (!device.utc) {
+      cronTime = this.convertLocalToUTC(startTime, timezone);
+    }
+
+    const cronExp = this.generateCronExp(cronTime, type);
+    const jobKey = `${scheduleId}_${samId}`;
+
+    if (this.jobs[jobKey]) {
+      this.jobs[jobKey].stop();
+      delete this.jobs[jobKey];
+    }
+
+    const job = cron.schedule(
+      cronExp,
+      async () => {
+        console.log(
+          `[Scheduler] Collecting data for samId: ${samId} | Schedule ID: ${scheduleId} | TZ: ${timezone}`
+        );
+        await RaspiServices.collectData({ samId });
+        await LogsServices.createLog({
+          activity: `Schedule ID ${scheduleId} triggered for samId: ${samId}`,
+        });
+      },
+      { timezone }
+    );
+
+    this.jobs[jobKey] = job;
+    console.log(
+      `[Scheduler] Job created for samId: ${samId}, scheduleId: ${scheduleId}, cronExp: ${cronExp}, timezone: ${timezone}`
+    );
+    return job;
+  }
+
   static async startSchedule({ samIds, startTime, type }) {
     try {
-      const existingSchedules = await ScheduleRepository.findScheduleBySamIds(
-        samIds
-      );
+      const existing = await ScheduleRepository.findScheduleBySamIds(samIds);
 
-      const [hour, minute] = startTime.split(":");
-      let cronExp;
-      if (type === "daily") {
-        cronExp = `${minute} ${hour} * * *`;
-      } else if (type === "12h") {
-        cronExp = `${minute} ${hour}-23/12 * * *`;
-      } else {
-        throw new Error(`Unsupported schedule type: ${type}`);
-      }
-
-      if (existingSchedules.length > 0) {
-        for (const schedule of existingSchedules) {
-          if (this.jobs[schedule.id]) {
-            this.jobs[schedule.id].stop();
-            delete this.jobs[schedule.id];
-          }
-
+      if (existing.length > 0) {
+        for (const schedule of existing) {
           await ScheduleRepository.updateSchedule(schedule.id, {
             samIds: JSON.stringify(samIds),
             startTime,
@@ -35,34 +84,20 @@ class ScheduleService {
             isActive: true,
           });
 
-          const job = cron.schedule(
-            cronExp,
-            async () => {
-              for (const samId of samIds) {
-                console.log(`[Scheduler] Collecting data for ${samId}`);
-                await RaspiServices.collectData({ samId });
-                await LogsServices.createLog({
-                  activity: `Scheduled data collection triggered for samId: ${samId} (schedule ID: ${schedule.id})`,
-                });
-              }
-            },
-            { timezone: "Asia/Makassar" }
-          );
-
-          this.jobs[schedule.id] = job;
+          for (const samId of samIds) {
+            await this.createJobForDevice(schedule.id, samId, startTime, type);
+          }
 
           await LogsServices.createLog({
-            activity: `Updated existing schedule ID ${
-              schedule.id
-            } for samIds: ${samIds.join(", ")} to ${startTime} (${type})`,
+            activity: `Updated schedule ID ${schedule.id} (${type}) at ${startTime}`,
           });
         }
 
         return {
           status: true,
           status_code: 200,
-          message: "Existing schedule updated successfully",
-          data: existingSchedules,
+          message: "Schedule updated successfully",
+          data: existing,
         };
       }
 
@@ -73,28 +108,12 @@ class ScheduleService {
         isActive: true,
       });
 
-      const job = cron.schedule(
-        cronExp,
-        async () => {
-          for (const samId of samIds) {
-            console.log(`[Scheduler] Collecting data for ${samId}`);
-            await RaspiServices.collectData({ samId });
-            await LogsServices.createLog({
-              activity: `Scheduled data collection triggered for samId: ${samId} (schedule ID: ${newSchedule.id})`,
-            });
-          }
-        },
-        { timezone: "Asia/Makassar" }
-      );
-
-      this.jobs[newSchedule.id] = job;
+      for (const samId of samIds) {
+        await this.createJobForDevice(newSchedule.id, samId, startTime, type);
+      }
 
       await LogsServices.createLog({
-        activity: `Created new schedule ID ${
-          newSchedule.id
-        } for samIds: ${samIds.join(
-          ", "
-        )}, startTime: ${startTime}, type: ${type}`,
+        activity: `Created schedule ID ${newSchedule.id} (${type}) at ${startTime}`,
       });
 
       return {
@@ -108,32 +127,51 @@ class ScheduleService {
       return {
         status: false,
         status_code: 500,
-        message: "Failed to create or update schedule: " + error.message,
-        data: null,
+        message: `Failed to create or update schedule: ${error.message}`,
       };
     }
   }
 
   static async stopSchedule({ id, samIds }) {
     try {
-      if (samIds && Array.isArray(samIds)) {
-        const activeSchedules = await ScheduleRepository.getActiveSchedules(
-          true
-        );
-        let stoppedCount = 0;
+      const stopJob = async (scheduleId, samId) => {
+        const jobKey = `${scheduleId}_${samId}`;
+        if (this.jobs[jobKey]) {
+          this.jobs[jobKey].stop();
+          delete this.jobs[jobKey];
+          console.log(`[Scheduler] Stopped job for samId: ${samId}`);
+        }
+      };
 
-        for (const raw of activeSchedules) {
+      if (samIds && Array.isArray(samIds)) {
+        const actives = await ScheduleRepository.getActiveSchedules(true);
+        let count = 0;
+
+        for (const raw of actives) {
           const schedule = raw.get({ plain: true });
           const scheduleSamIds = JSON.parse(schedule.samIds || "[]");
+          for (const samId of scheduleSamIds) {
+            if (samIds.includes(samId)) {
+              await stopJob(schedule.id, samId);
+              count++;
+            }
+          }
+        }
 
-          const hasTargetSam = scheduleSamIds.some((sid) =>
-            samIds.includes(sid)
-          );
-          if (!hasTargetSam) continue;
+        return {
+          status: true,
+          status_code: 200,
+          message: `Stopped ${count} jobs for given samIds`,
+          data: count,
+        };
+      }
 
-          if (this.jobs[schedule.id]) {
-            this.jobs[schedule.id].stop();
-            delete this.jobs[schedule.id];
+      if (id) {
+        const schedule = await ScheduleRepository.findById(id);
+        if (schedule) {
+          const samIdList = JSON.parse(schedule.samIds || "[]");
+          for (const samId of samIdList) {
+            await stopJob(schedule.id, samId);
           }
 
           await ScheduleRepository.stopSchedule({
@@ -141,67 +179,29 @@ class ScheduleService {
             isActive: false,
           });
 
-          stoppedCount++;
-          console.log(
-            `[Scheduler] Stopped schedule ${
-              schedule.id
-            } for samIds: ${scheduleSamIds.join(", ")}`
-          );
-
           await LogsServices.createLog({
-            activity: `Stopped schedule ID ${
-              schedule.id
-            } for samIds: ${scheduleSamIds.join(", ")}`,
+            activity: `Stopped schedule ID ${schedule.id}`,
           });
+
+          return {
+            status: true,
+            status_code: 200,
+            message: "Schedule stopped successfully",
+          };
         }
-
-        return {
-          status: true,
-          status_code: 200,
-          message:
-            stoppedCount === 0
-              ? "No active schedules found for the given samIds."
-              : `Stopped ${stoppedCount} schedules related to samIds.`,
-          data: stoppedCount,
-        };
-      }
-
-      if (id) {
-        if (this.jobs[id]) {
-          this.jobs[id].stop();
-          delete this.jobs[id];
-        }
-
-        const updated = await ScheduleRepository.stopSchedule({
-          id,
-          isActive: false,
-        });
-
-        await LogsServices.createLog({
-          activity: `Stopped schedule ID ${id}`,
-        });
-
-        return {
-          status: true,
-          status_code: 200,
-          message: "Schedule stopped successfully by ID.",
-          data: updated,
-        };
       }
 
       return {
         status: false,
         status_code: 400,
         message: "Please provide either id or samIds[] to stop schedules.",
-        data: null,
       };
     } catch (error) {
       console.error("[Scheduler] stopSchedule error:", error);
       return {
         status: false,
         status_code: 500,
-        message: "Failed to stop schedules: " + error.message,
-        data: null,
+        message: `Failed to stop schedules: ${error.message}`,
       };
     }
   }
@@ -212,15 +212,13 @@ class ScheduleService {
       return {
         status: true,
         status_code: 200,
-        message: "Schedules retrieved successfully",
         data: schedules,
       };
     } catch (error) {
       return {
         status: false,
         status_code: 500,
-        message: "Failed to retrieve schedules: " + error.message,
-        data: null,
+        message: error.message,
       };
     }
   }
@@ -231,7 +229,6 @@ class ScheduleService {
       return {
         status: true,
         status_code: 200,
-        message: "Active schedules retrieved successfully",
         data: schedules,
       };
     } catch (error) {
@@ -239,75 +236,44 @@ class ScheduleService {
       return {
         status: false,
         status_code: 500,
-        message: "Failed to retrieve schedules: " + error.message,
-        data: null,
+        message: error.message,
       };
     }
   }
+
   static async loadSchedules() {
     try {
       const schedules = await ScheduleRepository.getActiveSchedules(true);
-
       for (const raw of schedules) {
         const schedule = raw.get({ plain: true });
-        const startTime = schedule.startTime;
-
-        if (!startTime) {
-          console.warn(
-            `[Scheduler] Skip schedule ${schedule.id}, startTime missing`
-          );
-          continue;
-        }
-
-        const date = new Date(startTime);
-        const hour = date.getHours();
-        const minute = date.getMinutes();
-
-        let cronExp;
-        if (schedule.type === "daily") {
-          cronExp = `${minute} ${hour} * * *`;
-        } else if (schedule.type === "per12h" || schedule.type === "12h") {
-          cronExp = `${minute} ${hour}-23/12 * * *`;
-        } else {
-          console.warn(`[Scheduler] Unknown schedule type: ${schedule.type}`);
-          continue;
-        }
+        if (!schedule.startTime) continue;
 
         const samIds = Array.isArray(schedule.samIds)
           ? schedule.samIds
           : JSON.parse(schedule.samIds);
 
-        const job = cron.schedule(
-          cronExp,
-          async () => {
-            for (const samId of samIds) {
-              console.log(`[Scheduler] Collecting data for ${samId}`);
-              await RaspiServices.collectData({ samId });
-
-              await LogsServices.createLog({
-                activity: `Scheduled data collection triggered for samId: ${samId} (schedule ID: ${schedule.id})`,
-              });
-            }
-          },
-          { timezone: "Asia/Makassar" }
-        );
-
-        this.jobs[schedule.id] = job;
+        for (const samId of samIds) {
+          await this.createJobForDevice(
+            schedule.id,
+            samId,
+            schedule.startTime,
+            schedule.type
+          );
+        }
       }
 
+      console.log(`[Scheduler] Loaded ${schedules.length} active schedules`);
       return {
         status: true,
         status_code: 200,
-        message: `[Scheduler] Loaded ${schedules.length} active schedules`,
-        data: schedules.map((s) => s.get({ plain: true })),
+        message: `Loaded ${schedules.length} schedules`,
       };
     } catch (error) {
       console.error("[Scheduler] loadSchedules error:", error);
       return {
         status: false,
         status_code: 500,
-        message: "Failed to load schedules: " + error.message,
-        data: null,
+        message: error.message,
       };
     }
   }

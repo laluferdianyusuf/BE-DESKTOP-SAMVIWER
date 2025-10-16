@@ -1,4 +1,5 @@
 const EmailRepository = require("../repositories/emailRepository");
+const { mailTransporter } = require("../utils/mail");
 
 class EmailService {
   static async createEmail({ emailName }) {
@@ -149,6 +150,16 @@ class EmailService {
         data: null,
       };
     }
+  }
+
+  static async sendEmail(to, subject, html) {
+    const mailOptions = {
+      from: `"SamViewer Reports" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      html,
+    };
+    await mailTransporter.sendMail(mailOptions);
   }
 }
 

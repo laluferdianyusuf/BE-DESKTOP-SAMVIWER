@@ -1,17 +1,13 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const app = express();
-const PORT = 2090;
-const upload = require("./utils/fileUploads");
 const path = require("path");
-// require("dotenv").config();
 
-app.use(express.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cors());
-app.use("/videos", express.static("D:/VideosRaspi"));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+require("dotenv").config();
+require("./jobs/DailySendEmail.js");
+
+const ScheduleService = require("./services/scheduleServices.js");
+const upload = require("./utils/fileUploads");
 
 const UserController = require("./controllers/userController");
 const DeviceController = require("./controllers/deviceController");
@@ -24,11 +20,23 @@ const LocationController = require("./controllers/locationController");
 const UserDeviceController = require("./controllers/userDeviceController");
 const middleware = require("./middleware/auth");
 
-app.get("/", async (req, res) => {
-  res.status(200).send({
-    message: "Successfully",
-  });
+const app = express();
+const PORT = 2090;
+
+app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cors());
+app.use("/videos", express.static("D:/VideosRaspi"));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+app.get("/", (req, res) => {
+  res.status(200).send({ message: "Successfully" });
 });
+
+(async () => {
+  await ScheduleService.loadSchedules();
+  console.log("All schedules restored and cron jobs started!");
+})();
 
 // User
 app.post("/api/v1/register/user", UserController.createUser);
@@ -58,7 +66,7 @@ app.put("/api/v2/update/device/:deviceId", DeviceController.updateDevice);
 app.get("/api/v2/getAll/device", DeviceController.getAllDevice);
 app.delete("/api/v2/delete/device/:samId", DeviceController.deletedDevice);
 
-// data
+// Data
 app.post(
   "/api/v3/create/video/:samId",
   upload.single("video"),
@@ -68,36 +76,36 @@ app.get("/api/v3/get/speed/category", DataController.getSpeedByCategory);
 app.get("/api/v3/filter/data/:samId", DataController.filterData);
 app.get("/api/v3/all/data/:samId", DataController.getAllData);
 
-// raspi
+// Raspi
 app.get("/api/v4/raspi/:samId/connect", RaspiController.connect);
 app.get("/api/v4/raspi/:samId/collect", RaspiController.collect);
 app.post("/api/v4/raspi/:samId/configure", RaspiController.configure);
 app.get("/api/v4/raspi/:samId/config", RaspiController.getConfig);
 
-// schedule
+// Schedule
 app.post("/api/v5/schedule/generate", ScheduleController.createSchedule);
 app.put("/api/v5/schedule/stop", ScheduleController.stopSchedule);
 app.get("/api/v5/schedule/get", ScheduleController.getAllSchedules);
 app.get("/api/v5/schedule/load", ScheduleController.loadSchedules);
 app.get("/api/v5/schedule/active", ScheduleController.listActiveSchedules);
 
-// email
+// Email
 app.post("/api/v6/email/create", EmailController.createEmail);
 app.get("/api/v6/emails/get", EmailController.getEmails);
 app.get("/api/v6/email/get/:emailName", EmailController.getEmailByEmail);
 app.put("/api/v6/email/update/:id", EmailController.updateEmail);
 app.delete("/api/v6/email/delete/:id", EmailController.deleteEmail);
 
-// logs
+// Logs
 app.get("/api/v7/logs/get", LogController.getAllLogs);
 
-// location
+// Location
 app.post("/api/v8/location/create", LocationController.createLocation);
 app.get("/api/v8/location/get", LocationController.getALlLocation);
 app.put("/api/v8/location/update/:id", LocationController.updateLocation);
 app.delete("/api/v8/location/delete/:id", LocationController.deleteLocation);
 
-// user device relation
+// User-Device relation
 app.post("/api/v9/user-device/assign", UserDeviceController.assignDeviceToUser);
 app.get(
   "/api/v9/user-device/get/device/:userId",
@@ -113,5 +121,5 @@ app.get(
 );
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`listening on http://localhost:${PORT}`);
+  console.log(`Server listening on http://localhost:${PORT}`);
 });
