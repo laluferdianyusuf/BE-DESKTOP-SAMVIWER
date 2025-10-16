@@ -1,8 +1,8 @@
 {
   "development": {
     "username": "sa",
-    "password": "P@ssword123",
-    "database": "SamViewerDb",
+    "password": "12345",
+    "database": "SAM_VIEWER_DB",
     "host": "localhost",
     "dialect": "mssql",
     "port": 1433,
@@ -15,8 +15,8 @@
   },
   "test": {
     "username": "sa",
-    "password": "P@ssword123",
-    "database": "SamViewerDb",
+    "password": "12345",
+    "database": "SAM_VIEWER_DB",
     "host": "localhost",
     "dialect": "mssql",
     "port": 1433,
@@ -29,8 +29,8 @@
   },
   "production": {
     "username": "sa",
-    "password": "P@ssword123",
-    "database": "SamViewerDb",
+    "password": "12345",
+    "database": "SAM_VIEWER_DB",
     "host": "localhost",
     "dialect": "mssql",
     "port": 1433,
