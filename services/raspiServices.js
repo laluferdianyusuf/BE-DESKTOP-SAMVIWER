@@ -62,7 +62,6 @@ class RaspiServices {
       };
     }
   }
-
   static async collectData({ samId }) {
     const device = await DeviceRepositories.existingDevice({ samId });
     if (!device) {

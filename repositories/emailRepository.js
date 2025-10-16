@@ -18,6 +18,14 @@ class EmailRepository {
     });
   }
 
+  static async getAllEmail() {
+    const emails = await email.findAll({
+      attributes: ["emailName"],
+    });
+
+    return emails.map((e) => e.emailName);
+  }
+
   static async getEmailById({ id }) {
     return await email.findOne({
       where: { id },

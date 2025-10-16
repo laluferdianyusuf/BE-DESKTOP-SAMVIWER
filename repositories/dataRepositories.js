@@ -89,5 +89,49 @@ class DataRepositories {
   static async getAllData({ samId }) {
     return await data.findAll({ where: { samId: samId } });
   }
+
+  static async getAllDataByTime({ startDate, endDate }) {
+    return await data.findAll({
+      where: {
+        createdAt: {
+          [Op.between]: [startDate, endDate],
+        },
+      },
+      order: [["createdAt", "ASC"]],
+    });
+  }
+
+  static async getAllDataYesterday() {
+    const now = new Date();
+
+    // Buat waktu awal & akhir kemarin
+    const yesterdayStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - 1,
+      0,
+      0,
+      0,
+      0
+    );
+    const yesterdayEnd = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - 1,
+      23,
+      59,
+      59,
+      999
+    );
+
+    return await data.findAll({
+      where: {
+        createdAt: {
+          [Op.between]: [yesterdayStart, yesterdayEnd],
+        },
+      },
+      order: [["createdAt", "ASC"]],
+    });
+  }
 }
 module.exports = DataRepositories;

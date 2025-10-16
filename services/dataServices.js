@@ -3,6 +3,9 @@ const DeviceRepositories = require("../repositories/deviceRepositories");
 const { uploadToGCS } = require("../utils/gcs");
 const fs = require("fs");
 const path = require("path");
+const { generateLogTable } = require("../utils/table");
+const EmailRepository = require("../repositories/emailRepository");
+const EmailService = require("./emailServices");
 const LOCAL_SAVE_PATH = "D:/VideosRaspi";
 
 class DataServices {
@@ -165,7 +168,6 @@ class DataServices {
       };
     }
   }
-
   static async getAllData({ samId }) {
     try {
       const getData = await DataRepositories.getAllData({ samId });
@@ -184,6 +186,38 @@ class DataServices {
         data: null,
       };
     }
+  }
+
+  static async sendYesterdayReport() {
+    const data = await DataRepositories.getAllDataYesterday();
+
+    const htmlTable = generateLogTable(data);
+
+    const recipients = await EmailRepository.getAllEmail();
+
+    if (recipients.length === 0) {
+      console.log("Tidak ada email penerima aktif.");
+      return;
+    }
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const dateStr = yesterday.toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const htmlContent = `<p>Berikut laporan log tanggal <b>${dateStr}</b>:</p>
+      ${htmlTable}
+      <p>Untuk melihat data lebih lengkap, klik link berikut:</p>
+      <p><a href="${process.env.APP_URL}/dashboard" target="_blank">${process.env.APP_URL}/dashboard</a></p>`;
+
+    await EmailService.sendEmail(
+      recipients,
+      `Daily Log Report - ${dateStr}`,
+      htmlContent
+    );
   }
 }
 
