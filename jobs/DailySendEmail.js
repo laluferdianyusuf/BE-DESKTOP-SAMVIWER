@@ -1,7 +1,7 @@
 const cron = require("node-cron");
 const DataServices = require("../services/dataServices.js");
 
-cron.schedule("0 5 * * *", async () => {
+cron.schedule("51 16 * * *", async () => {
   console.log("[DailySendEmail] Running daily email report delivery...");
   try {
     await DataServices.sendYesterdayReport();

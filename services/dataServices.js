@@ -20,7 +20,6 @@ class DataServices {
 
   static async createVideo({ video, speed, samId }) {
     try {
-      // === Validasi Input ===
       const error = this.validateFields({ video, speed, samId });
       if (error) {
         return {
@@ -31,13 +30,11 @@ class DataServices {
         };
       }
 
-      // === Tentukan Kategori ===
       let category = "";
       if (speed > 99) category = "over speed";
       else if (speed > 30 && speed <= 99) category = "average speed";
       else category = "low speed";
 
-      // === Pastikan Device Ada ===
       const device = await DeviceRepositories.existingDevice({ samId });
       if (!device) {
         return {
@@ -48,7 +45,6 @@ class DataServices {
         };
       }
 
-      // === Simpan ke Folder Lokal ===
       const samFolder = path.join(LOCAL_SAVE_PATH, samId);
       if (!fs.existsSync(samFolder)) {
         fs.mkdirSync(samFolder, { recursive: true });
@@ -57,24 +53,20 @@ class DataServices {
       const fileName = `${Date.now()}_${video.originalname}`;
       const localPath = path.join(samFolder, fileName);
 
-      // Simpan file video ke disk
       fs.writeFileSync(localPath, video.buffer);
 
-      // === Upload ke GCS ===
       const gcsPath = `${samId}/${fileName}`;
       const gcsUrl = await uploadToGCS(localPath, gcsPath);
 
-      // === Simpan ke Database ===
       const saveData = await DataRepositories.createVideo({
         deviceId: device.id,
         samId,
         speed,
-        video: gcsUrl, // gunakan URL dari GCS
+        video: gcsUrl,
         category,
         createdAt: new Date(),
       });
 
-      // === Hapus file lokal setelah upload (opsional) ===
       if (fs.existsSync(localPath)) {
         fs.unlinkSync(localPath);
       }
@@ -86,7 +78,7 @@ class DataServices {
         data: { data: saveData },
       };
     } catch (error) {
-      console.error("❌ Create video error:", error);
+      console.error("Create video error:", error);
       return {
         status: false,
         status_code: 500,
@@ -194,6 +186,7 @@ class DataServices {
     const htmlTable = generateLogTable(data);
 
     const recipients = await EmailRepository.getAllEmail();
+    console.log(recipients);
 
     if (recipients.length === 0) {
       console.log("Tidak ada email penerima aktif.");
