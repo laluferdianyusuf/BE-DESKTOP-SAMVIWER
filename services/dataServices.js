@@ -214,6 +214,7 @@ class DataServices {
   }
 
   static async getTrafficByFilter({ samId, filterType, filterValue }) {
+    console.log(samId, filterType, filterValue);
     try {
       if (!samId) {
         return {

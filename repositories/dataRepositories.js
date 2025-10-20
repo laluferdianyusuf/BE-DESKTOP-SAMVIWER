@@ -49,43 +49,6 @@ class DataRepositories {
     return findVideo;
   }
 
-  // static async findByFilter({ samId, startDate, endDate, filterType }) {
-  //   const where = {
-  //     samId,
-  //     createdAt: {
-  //       [Op.between]: [new Date(startDate), new Date(endDate)],
-  //     },
-  //   };
-
-  //   let attributes = ["id", "samId", "speed", "createdAt"];
-
-  //   if (filterType === "month") {
-  //     attributes = [
-  //       [fn("DATE_TRUNC", "month", col("createdAt")), "period"],
-  //       [fn("AVG", col("speed")), "avgSpeed"],
-  //     ];
-  //   }
-
-  //   if (filterType === "year") {
-  //     attributes = [
-  //       [fn("DATE_TRUNC", "year", col("createdAt")), "period"],
-  //       [fn("AVG", col("speed")), "avgSpeed"],
-  //     ];
-  //   }
-
-  //   const options = {
-  //     where,
-  //     order: [["createdAt", "ASC"]],
-  //   };
-
-  //   if (filterType !== "day") {
-  //     options.attributes = attributes;
-  //     options.group = ["period"];
-  //   }
-
-  //   return await TrafficData.findAll(options);
-  // }
-
   static async findByFilter({ samId, filterType, filterValue }) {
     const whereCondition = {};
 
@@ -94,52 +57,30 @@ class DataRepositories {
     }
 
     if (filterType && filterValue) {
-      switch (filterType) {
-        case "date":
-          whereCondition.createdAt = {
-            [Op.between]: [
-              new Date(`${filterValue}T00:00:00.000Z`),
-              new Date(`${filterValue}T23:59:59.999Z`),
-            ],
-          };
-          break;
+      let startDate, endDate;
 
-        case "day":
-          whereCondition[Op.and] = [
-            data.sequelize.where(
-              data.sequelize.fn("DAY", data.sequelize.col("createdAt")),
-              Number(filterValue)
-            ),
-          ];
-          break;
-
-        case "month":
-          whereCondition[Op.and] = [
-            data.sequelize.where(
-              data.sequelize.fn("MONTH", data.sequelize.col("createdAt")),
-              Number(filterValue)
-            ),
-          ];
-          break;
-
-        case "year":
-          whereCondition[Op.and] = [
-            data.sequelize.where(
-              data.sequelize.fn("YEAR", data.sequelize.col("createdAt")),
-              Number(filterValue)
-            ),
-          ];
-          break;
-
-        default:
-          throw new Error("Filter type tidak valid");
+      if (filterType === "day") {
+        startDate = new Date(`${filterValue}T00:00:00`);
+        endDate = new Date(`${filterValue}T23:59:59`);
+      } else if (filterType === "month") {
+        const [year, month] = filterValue.split("-");
+        startDate = new Date(Number(year), Number(month) - 1, 1, 0, 0, 0);
+        endDate = new Date(Number(year), Number(month), 0, 23, 59, 59);
+      } else if (filterType === "year") {
+        const year = Number(filterValue);
+        startDate = new Date(year, 0, 1, 0, 0, 0);
+        endDate = new Date(year, 11, 31, 23, 59, 59);
       }
+
+      whereCondition.createdAt = {
+        [Op.between]: [startDate, endDate],
+      };
     }
 
     return data.findAll({
       where: whereCondition,
-      order: [["createdAt", "DESC"]],
-      attributes: ["id", "speed", "createdAt"],
+      order: [["createdAt", "ASC"]],
+      attributes: ["id", "samId", "speed", "createdAt"],
     });
   }
 
@@ -198,7 +139,6 @@ class DataRepositories {
   static async getAllDataYesterday() {
     const now = new Date();
 
-    // Buat waktu awal & akhir kemarin
     const yesterdayStart = new Date(
       now.getFullYear(),
       now.getMonth(),
