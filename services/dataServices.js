@@ -204,7 +204,7 @@ class DataServices {
     const htmlContent = `<p>Berikut laporan log tanggal <b>${dateStr}</b>:</p>
       ${htmlTable}
       <p>Untuk melihat data lebih lengkap, klik link berikut:</p>
-      <p><a href="${process.env.APP_URL}/dashboard" target="_blank">${process.env.APP_URL}/dashboard</a></p>`;
+      <p><a href="${process.env.APP_URL}/" target="_blank">${process.env.APP_URL}/</a></p>`;
 
     await EmailService.sendEmail(
       recipients,
