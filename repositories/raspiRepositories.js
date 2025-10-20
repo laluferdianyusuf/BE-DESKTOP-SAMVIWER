@@ -30,7 +30,27 @@ class RaspiRepositories {
 
   static async getConfig({ ip }) {
     try {
-      const response = await axios.get(`http://${ip}:5001/api/config`);
+      const response = await axios.get(`http://${ip}:5001/api/network`);
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to get config at ${ip}: ${error.message}`);
+    }
+  }
+
+  static async getJsonFile({ ip }) {
+    try {
+      const response = await axios.get(`http://${ip}:5001/api/json-files`);
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to get config at ${ip}: ${error.message}`);
+    }
+  }
+
+  static async getJsonFilename({ ip }) {
+    try {
+      const response = await axios.get(
+        `http://${ip}:5001/api/json-files${filename}`
+      );
       return response.data;
     } catch (error) {
       throw new Error(`Failed to get config at ${ip}: ${error.message}`);

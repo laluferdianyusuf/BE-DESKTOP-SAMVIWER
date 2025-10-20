@@ -99,7 +99,7 @@ class RaspiServices {
         fs.mkdirSync(samFolder, { recursive: true });
 
       for (const item of result) {
-        const categories = item.speed > speedLimit ? "over speed" : "normal";
+        const categories = item.speed >= speedLimit ? "over speed" : "normal";
 
         const existing = await DataRepositories.findOneVideo({
           videoUrl: item.videoUrl || "",
@@ -156,7 +156,7 @@ class RaspiServices {
         status: true,
         status_code: 200,
         message: "All logs saved to database, video or not",
-        data: dataCollected,
+        data: { dataCollected, result },
       };
     } catch (error) {
       return {

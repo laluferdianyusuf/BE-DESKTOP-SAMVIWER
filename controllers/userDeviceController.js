@@ -1,3 +1,4 @@
+const { accessibleDevices } = require("../repositories/userDeviceRepository");
 const UserDeviceService = require("../services/userDeviceServices");
 
 const UserDeviceController = {
@@ -50,6 +51,19 @@ const UserDeviceController = {
 
     const { status, status_code, message, data } =
       await UserDeviceService.getUsersByDevice(deviceId);
+
+    res.status(status_code).send({
+      status,
+      status_code,
+      message,
+      data,
+    });
+  },
+
+  async accessibleDevices(req, res) {
+    const { userId } = req.users;
+    const { status, status_code, message, data } =
+      await UserDeviceService.accessibleDevices({ userId });
 
     res.status(status_code).send({
       status,

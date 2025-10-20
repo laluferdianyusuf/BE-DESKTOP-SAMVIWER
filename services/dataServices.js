@@ -212,6 +212,39 @@ class DataServices {
       htmlContent
     );
   }
+
+  static async getTrafficByFilter({ samId, filterType, filterValue }) {
+    try {
+      if (!samId) {
+        return {
+          status: false,
+          status_code: 403,
+          message: "SamId Required",
+          data: null,
+        };
+      }
+
+      const result = await DataRepositories.findByFilter({
+        samId,
+        filterType,
+        filterValue,
+      });
+
+      return {
+        status: true,
+        status_code: 200,
+        message: "Successfully",
+        data: result,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        status_code: 500,
+        message: "Error" + error,
+        data: null,
+      };
+    }
+  }
 }
 
 module.exports = DataServices;

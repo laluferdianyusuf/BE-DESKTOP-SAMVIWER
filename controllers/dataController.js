@@ -68,4 +68,27 @@ const getAllData = async (req, res) => {
   });
 };
 
-module.exports = { createVideo, getSpeedByCategory, filterData, getAllData };
+const getTrafficByFilter = async (req, res) => {
+  const { samId, filterType, filterValue } = req.query;
+
+  const { status, status_code, message, data } =
+    await dataServices.getTrafficByFilter({
+      samId,
+      filterType,
+      filterValue,
+    });
+  res.status(status_code).send({
+    status,
+    status_code,
+    message,
+    data,
+  });
+};
+
+module.exports = {
+  createVideo,
+  getSpeedByCategory,
+  filterData,
+  getAllData,
+  getTrafficByFilter,
+};

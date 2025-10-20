@@ -75,6 +75,7 @@ app.post(
 app.get("/api/v3/get/speed/category", DataController.getSpeedByCategory);
 app.get("/api/v3/filter/data/:samId", DataController.filterData);
 app.get("/api/v3/all/data/:samId", DataController.getAllData);
+app.get("/api/v3/get/all-data/filters", DataController.getTrafficByFilter);
 
 // Raspi
 app.get("/api/v4/raspi/:samId/connect", RaspiController.connect);
@@ -110,6 +111,11 @@ app.post("/api/v9/user-device/assign", UserDeviceController.assignDeviceToUser);
 app.get(
   "/api/v9/user-device/get/device/:userId",
   UserDeviceController.getDevicesByUser
+);
+app.get(
+  "/api/v9/user-device/get/accessible/device",
+  middleware.authentication,
+  UserDeviceController.accessibleDevices
 );
 app.delete(
   "/api/v9/user-device/delete",
