@@ -122,6 +122,7 @@ const UserDeviceService = {
       };
     }
   },
+
   async getUsersByDevice(deviceId) {
     try {
       const device = await DeviceRepositories.existingDeviceId({ deviceId });
@@ -148,6 +149,48 @@ const UserDeviceService = {
         status: false,
         status_code: 500,
         message: `Failed to fetch users by device: ${error.message}`,
+        data: null,
+      };
+    }
+  },
+
+  async accessibleDevices({ userId }) {
+    if (!userId) {
+      return {
+        status: false,
+        status_code: 403,
+        message: "User ID is required",
+        data: null,
+      };
+    }
+    try {
+      const findUser = await UserRepositories.findOneUserId({ userId });
+      if (!findUser) {
+        return {
+          status: false,
+          status_code: 404,
+          message: "No user found",
+          data: null,
+        };
+      }
+
+      const accessibleData = await UserDeviceRepository.accessibleDevices({
+        userId,
+      });
+
+      return {
+        status: true,
+        status_code: 200,
+        message: "Accessible retrieved",
+        data: accessibleData,
+      };
+    } catch (error) {
+      console.log(error);
+
+      return {
+        status: false,
+        status_code: 500,
+        message: "Server error" + error,
         data: null,
       };
     }
