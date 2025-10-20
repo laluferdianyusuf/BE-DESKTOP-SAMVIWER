@@ -92,8 +92,6 @@ class RaspiServices {
       const result = await RaspiRepositories.collectData({
         ip: device.deviceIP,
       });
-      console.log("=== FULL RESULT SEBELUM LOOP ===");
-      console.log(JSON.stringify(result, null, 2));
 
       const dataCollected = [];
       const samFolder = path.join(LOCAL_SAVE_PATH, samId);
@@ -102,8 +100,6 @@ class RaspiServices {
 
       for (const item of result) {
         const categories = item.speed >= speedLimit ? "over speed" : "normal";
-        console.log("=== ITEM DALAM LOOP ===");
-        console.log(item);
 
         const existing = await DataRepositories.findOneVideo({
           videoUrl: item.videoUrl || "",
@@ -116,11 +112,7 @@ class RaspiServices {
         let gcsUrl = "tidak ada url";
         let localPath = "tidak ada file";
 
-        console.log("Item videoUrl:", item.videoUrl);
-
         if (item.videoUrl && /^https?:\/\//.test(item.videoUrl)) {
-          console.log(gcsUrl);
-
           try {
             const fileName = `${Date.now()}_${path.basename(item.videoUrl)}`;
             localPath = path.join(samFolder, fileName);
@@ -138,8 +130,6 @@ class RaspiServices {
             console.log(
               `Failed to process video ${item.videoUrl}: ${error.message}`
             );
-            console.log("UPLOAD ERROR:", error);
-            console.log("URL yang gagal:", item.videoUrl);
             gcsUrl = "tidak ada url";
             localPath = "tidak ada file";
           }
