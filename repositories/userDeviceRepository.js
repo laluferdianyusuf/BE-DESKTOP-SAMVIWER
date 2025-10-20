@@ -68,20 +68,18 @@ const UserDeviceRepository = {
       return [];
     }
 
-    const dataRecords = await data.findAll({
-      where: { deviceId: { [Op.in]: deviceIds } },
-      attributes: ["deviceId", "samId", "speed", "category", "createdAt"],
-    });
+    // const dataRecords = await data.findAll({
+    //   where: { deviceId: { [Op.in]: deviceIds } },
+    //   attributes: ["deviceId", "samId", "speed", "category", "createdAt"],
+    // });
 
     const result = accessibleDevices.map((dev) => {
-      const relatedData = dataRecords.filter(
-        (d) => d.deviceId === dev.deviceId
-      );
+      // const relatedData = dataRecords.filter(
+      //   (d) => d.deviceId === dev.deviceId
+      // );
       return {
         deviceId: dev.deviceId,
         samId: dev.samId,
-        name: dev.name,
-        data: relatedData,
       };
     });
 
