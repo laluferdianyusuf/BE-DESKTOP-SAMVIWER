@@ -10,7 +10,9 @@ const generateLogTable = (logs) => {
       <td>${new Date(log.createdAt).toLocaleString()}</td>
       <td>${log.samId || "-"}</td>
       <td>${log.speed || "-"}</td>
-      <td><a href="${log.video}" target="_blank">Link Video</a></td>
+      <td><a href="${encodeURI(
+        log.video
+      )}" target="_blank" rel="noopener noreferrer">Link Video</a></td>
     </tr>
   `
     )

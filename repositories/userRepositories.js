@@ -23,11 +23,10 @@ class UserRepositories {
     });
     return existingUsername;
   }
-  static async updateUser({ userId, username, password, credential }) {
+  static async updateUser({ userId, username, credential }) {
     const updateUser = await users.update(
       {
         username: username,
-        password: password,
         credential: credential,
       },
       { where: { userId: userId } }

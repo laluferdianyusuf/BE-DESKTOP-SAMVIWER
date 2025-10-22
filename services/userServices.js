@@ -117,7 +117,7 @@ class UserServices {
       };
     }
   }
-  static async updateUser({ userId, username, password, credential }) {
+  static async updateUser({ userId, username, credential }) {
     try {
       const getUser = await UserRepositories.findOneUserId({ userId });
 
@@ -132,7 +132,6 @@ class UserServices {
       const updateUser = await UserRepositories.updateUser({
         userId,
         username,
-        password: await bcrypt.hash(password, JWT.SALT_ROUND),
         credential,
       });
       return {

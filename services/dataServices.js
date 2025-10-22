@@ -180,26 +180,66 @@ class DataServices {
     }
   }
 
+  // static async sendYesterdayReport() {
+  //   const today = new Date();
+  //   const yesterday = new Date(today);
+  //   yesterday.setDate(today.getDate() - 1);
+  //   const data = await DataRepositories.getAllDataYesterday({
+  //     startDate: yesterday,
+  //     endDate: yesterday,
+  //   });
+
+  //   const htmlTable = generateLogTable(data);
+
+  //   const recipients = await EmailRepository.getAllEmail();
+
+  //   if (recipients.length === 0) {
+  //     console.log("Tidak ada email penerima aktif.");
+  //     return;
+  //   }
+
+  //   const dateStr = yesterday.toLocaleDateString("id-ID", {
+  //     year: "numeric",
+  //     month: "long",
+  //     day: "numeric",
+  //   });
+
+  //   const htmlContent = `<p>Berikut laporan log tanggal <b>${dateStr}</b>:</p>
+  //     ${htmlTable}
+  //     <p>Untuk melihat data lebih lengkap, klik link berikut:</p>
+  //     <p><a href="${process.env.APP_URL}/" target="_blank">${process.env.APP_URL}/</a></p>`;
+
+  //   await EmailService.sendEmail(
+  //     recipients,
+  //     `Daily Log Report - ${dateStr}`,
+  //     htmlContent
+  //   );
+  // }
+
   static async sendYesterdayReport() {
-    const data = await DataRepositories.getAllDataYesterday();
+    const today = new Date();
+    const endDate = new Date(today);
+    endDate.setDate(today.getDate() - 1);
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - 14);
+
+    const data = await DataRepositories.getAllDataYesterday({
+      startDate: startDate,
+      endDate: endDate,
+    });
 
     const htmlTable = generateLogTable(data);
 
     const recipients = await EmailRepository.getAllEmail();
-    console.log(recipients);
 
     if (recipients.length === 0) {
       console.log("Tidak ada email penerima aktif.");
       return;
     }
 
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const dateStr = yesterday.toLocaleDateString("id-ID", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+    const dateStr = `${startDate.toLocaleDateString(
+      "id-ID"
+    )} - ${endDate.toLocaleDateString("id-ID")}`;
 
     const htmlContent = `<p>Berikut laporan log tanggal <b>${dateStr}</b>:</p>
       ${htmlTable}
@@ -214,7 +254,6 @@ class DataServices {
   }
 
   static async getTrafficByFilter({ samId, filterType, filterValue }) {
-    console.log(samId, filterType, filterValue);
     try {
       if (!samId) {
         return {

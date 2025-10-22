@@ -32,11 +32,10 @@ const login = async (req, res) => {
 
 const updateUser = async (req, res) => {
   const { userId } = req.params;
-  const { username, password, credential } = req.body;
+  const { username, credential } = req.body;
   const { status, status_code, message, data } = await UserServices.updateUser({
     userId,
     username,
-    password,
     credential,
   });
   res.status(status_code).send({

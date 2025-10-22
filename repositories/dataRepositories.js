@@ -136,33 +136,16 @@ class DataRepositories {
     });
   }
 
-  static async getAllDataYesterday() {
-    const now = new Date();
-
-    const yesterdayStart = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() - 1,
-      0,
-      0,
-      0,
-      0
-    );
-    const yesterdayEnd = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() - 1,
-      23,
-      59,
-      59,
-      999
-    );
+  static async getAllDataYesterday({ startDate, endDate }) {
+    const start = startDate.toISOString().split("T")[0];
+    const end = endDate.toISOString().split("T")[0];
 
     return await data.findAll({
       where: {
         createdAt: {
-          [Op.between]: [yesterdayStart, yesterdayEnd],
+          [Op.between]: [start, end],
         },
+        category: "over speed",
       },
       order: [["createdAt", "ASC"]],
     });
