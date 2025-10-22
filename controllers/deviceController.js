@@ -4,11 +4,8 @@ const addDevice = async (req, res) => {
   const {
     samId,
     deviceIP,
-    deviceUsername,
     deviceRootFolder,
     cameraIP,
-    cameraUsername,
-    cameraPassword,
     cameraRootFolder,
     cameraType,
     location,
@@ -19,11 +16,8 @@ const addDevice = async (req, res) => {
     {
       samId,
       deviceIP,
-      deviceUsername,
       deviceRootFolder,
       cameraIP,
-      cameraUsername,
-      cameraPassword,
       cameraRootFolder,
       cameraType,
       location,

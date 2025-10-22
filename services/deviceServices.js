@@ -6,11 +6,8 @@ class DeviceServices {
   static async addDevice({
     samId,
     deviceIP,
-    deviceUsername,
     deviceRootFolder,
     cameraIP,
-    cameraUsername,
-    cameraPassword,
     cameraRootFolder,
     cameraType,
     location,
@@ -21,11 +18,8 @@ class DeviceServices {
       if (
         !samId ||
         !deviceIP ||
-        !deviceUsername ||
         !deviceRootFolder ||
         !cameraIP ||
-        !cameraUsername ||
-        !cameraPassword ||
         !cameraRootFolder ||
         !cameraType ||
         !location
@@ -53,11 +47,8 @@ class DeviceServices {
         deviceId: uuidv4(),
         samId,
         deviceIP,
-        deviceUsername,
         deviceRootFolder,
         cameraIP,
-        cameraUsername,
-        cameraPassword,
         cameraRootFolder,
         cameraType,
         location,
@@ -83,11 +74,8 @@ class DeviceServices {
     deviceId,
     samId,
     deviceIP,
-    deviceUsername,
     deviceRootFolder,
     cameraIP,
-    cameraUsername,
-    cameraPassword,
     cameraRootFolder,
     cameraType,
     location,
@@ -115,11 +103,8 @@ class DeviceServices {
         deviceId,
         samId: keepOld(samId, getDevice.samId),
         deviceIP: keepOld(deviceIP, getDevice.deviceIP),
-        deviceUsername: keepOld(deviceUsername, getDevice.deviceUsername),
         deviceRootFolder: keepOld(deviceRootFolder, getDevice.deviceRootFolder),
         cameraIP: keepOld(cameraIP, getDevice.cameraIP),
-        cameraUsername: keepOld(cameraUsername, getDevice.cameraUsername),
-        cameraPassword: keepOld(cameraPassword, getDevice.cameraPassword),
         cameraRootFolder: keepOld(cameraRootFolder, getDevice.cameraRootFolder),
         cameraType: keepOld(cameraType, getDevice.cameraType),
         location: keepOld(location, getDevice.location),

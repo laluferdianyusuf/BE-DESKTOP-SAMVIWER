@@ -14,19 +14,10 @@ module.exports = {
       deviceIP: {
         type: Sequelize.STRING,
       },
-      deviceUsername: {
-        type: Sequelize.STRING,
-      },
       deviceRootFolder: {
         type: Sequelize.STRING,
       },
       cameraIP: {
-        type: Sequelize.STRING,
-      },
-      cameraUsername: {
-        type: Sequelize.STRING,
-      },
-      cameraPassword: {
         type: Sequelize.STRING,
       },
       cameraRootFolder: {
