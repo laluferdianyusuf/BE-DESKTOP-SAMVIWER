@@ -2,6 +2,22 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const path = require("path");
+const cookieParser = require("cookie-parser");
+const app = express();
+const PORT = 2090;
+
+app.use(cookieParser());
+app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      return callback(null, origin);
+    },
+    credentials: true,
+  })
+);
 
 require("dotenv").config();
 require("./jobs/DailySendEmail.js");
@@ -20,13 +36,8 @@ const LocationController = require("./controllers/locationController");
 const UserDeviceController = require("./controllers/userDeviceController");
 const middleware = require("./middleware/auth");
 
-const app = express();
-const PORT = 2090;
-
-app.use(express.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cors());
-app.use("/videos", express.static("D:/VideosRaspi"));
+const videoFolder = path.join(__dirname, "videos");
+app.use("/videos", express.static(videoFolder));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.get("/", (req, res) => {
@@ -53,12 +64,18 @@ app.put(
   UserController.updateUser,
   middleware.isAdmin
 );
-app.delete("/api/v1/delete/user/:userId", UserController.deleteUser);
+app.delete(
+  "/api/v1/delete/user/:userId",
+  middleware.authentication,
+  UserController.deleteUser
+);
 app.get(
   "/api/v1/current/user",
   middleware.authentication,
   UserController.currentUser
 );
+
+app.post("/api/v1/logout", middleware.authentication, UserController.logout);
 
 // Device
 app.post("/api/v2/add/device", DeviceController.addDevice);

@@ -22,11 +22,19 @@ const login = async (req, res) => {
     password,
     credential,
   });
+
+  res.cookie("token", data && data.token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    maxAge: 24 * 60 * 60 * 1000,
+  });
+
   res.status(status_code).send({
     status,
     status_code,
     message,
-    data,
+    data: data && data.user,
   });
 };
 
@@ -79,6 +87,14 @@ const currentUser = async (req, res) => {
   });
 };
 
+const logout = async (req, res) => {
+  res.clearCookie("token");
+  res.status(200).send({
+    status: true,
+    message: "Logout successful",
+  });
+};
+
 module.exports = {
   createUser,
   login,
@@ -86,4 +102,5 @@ module.exports = {
   deleteUser,
   getAllUser,
   currentUser,
+  logout,
 };
