@@ -115,21 +115,19 @@ class RaspiServices {
         if (item.videoUrl && /^https?:\/\//.test(item.videoUrl)) {
           try {
             const fileName = `${Date.now()}_${path.basename(item.videoUrl)}`;
-            localPath = path.join(samFolder, fileName);
+            const fullLocalPath = path.join(samFolder, fileName);
 
             const res = await axios({
               method: "get",
               url: item.videoUrl,
               responseType: "stream",
             });
-            await pipeline(res.data, fs.createWriteStream(localPath));
+            await pipeline(res.data, fs.createWriteStream(fullLocalPath));
+            localPath = `/videos/${samId}/${fileName}`;
 
             const gcsPath = `${samId}/${fileName}`;
-            gcsUrl = await uploadToGCS(localPath, gcsPath);
+            gcsUrl = await uploadToGCS(fullLocalPath, gcsPath);
           } catch (error) {
-            console.log(
-              `Failed to process video ${item.videoUrl}: ${error.message}`
-            );
             gcsUrl = "tidak ada url";
             localPath = "tidak ada file";
           }

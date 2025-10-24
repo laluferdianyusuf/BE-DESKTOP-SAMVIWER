@@ -61,9 +61,9 @@ const UserDeviceController = {
   },
 
   async accessibleDevices(req, res) {
-    const { userId } = req.users;
+    const user = req.users;
     const { status, status_code, message, data } =
-      await UserDeviceService.accessibleDevices({ userId });
+      await UserDeviceService.accessibleDevices({ userId: user.userId });
 
     res.status(status_code).send({
       status,
