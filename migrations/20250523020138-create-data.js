@@ -20,9 +20,13 @@ module.exports = {
       },
       deviceId: {
         type: Sequelize.STRING,
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
       },
       samId: {
         type: Sequelize.STRING,
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
       },
       category: {
         type: Sequelize.STRING,
