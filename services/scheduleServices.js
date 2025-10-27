@@ -8,28 +8,63 @@ const moment = require("moment-timezone");
 class ScheduleService {
   static jobs = {};
 
-  static convertLocalToUTC(timeString, timezone) {
-    const [hour, minute] = timeString.split(":");
-    const local = moment.tz({ hour, minute }, timezone);
-    const utcTime = local.utc().format("HH:mm");
-    return utcTime;
+  static convertLocalToUTC(timeLike, timezone) {
+    if (!timeLike) {
+      throw new Error("convertLocalToUTC: missing time value");
+    }
+
+    let m;
+    if (moment.isMoment(timeLike)) {
+      m = timeLike.clone();
+    } else if (typeof timeLike === "string") {
+      if (/^\d{1,2}:\d{2}$/.test(timeLike)) {
+        m = moment.tz(timeLike, "HH:mm", timezone);
+      } else {
+        m = moment.tz(timeLike, timezone);
+      }
+    } else if (timeLike instanceof Date || typeof timeLike === "number") {
+      m = moment.tz(timeLike, timezone);
+    } else {
+      m = moment.tz(String(timeLike), timezone);
+    }
+
+    if (!m.isValid()) {
+      throw new Error(`Invalid time / timezone: ${timeLike} / ${timezone}`);
+    }
+
+    return m.clone().utc().format("HH:mm");
   }
 
-  static generateCronExp(timeString, type) {
-    const [hour, minute] = timeString.split(":");
+  static generateCronExp(timeLike, type) {
+    let hour, minute;
+    if (typeof timeLike === "string" && /^\d{1,2}:\d{2}$/.test(timeLike)) {
+      [hour, minute] = timeLike.split(":").map((v) => parseInt(v, 10));
+    } else {
+      const m = moment.isMoment(timeLike) ? timeLike : moment(timeLike);
+      if (!m.isValid()) {
+        throw new Error("generateCronExp: invalid time value");
+      }
+      hour = m.hour();
+      minute = m.minute();
+    }
+
+    hour = Number.isFinite(hour) ? hour : 0;
+    minute = Number.isFinite(minute) ? minute : 0;
 
     if (type === "daily") {
       return `${minute} ${hour} * * *`;
     }
+
     if (type === "12h" || type === "per12h") {
-      return `${minute} ${hour}-23/12 * * *`;
+      const hour2 = (hour + 12) % 24;
+      return [`${minute} ${hour} * * *`, `${minute} ${hour2} * * *`];
     }
 
     throw new Error(`Unsupported schedule type: ${type}`);
   }
 
   static async createJobForDevice(scheduleId, samId, startTime, type) {
-    const device = await DeviceRepository.findBySamId(samId);
+    const device = await DeviceRepository.existingDevice({ samId });
     if (!device) {
       console.warn(`[Scheduler] Device ${samId} tidak ditemukan`);
       return;
@@ -37,21 +72,69 @@ class ScheduleService {
 
     const timezone = device.utc ? "UTC" : device.timezone || "UTC";
 
-    let cronTime = startTime;
-    if (!device.utc) {
-      cronTime = this.convertLocalToUTC(startTime, timezone);
+    if (!startTime) {
+      console.warn(`[Scheduler] Missing startTime for schedule ${scheduleId}`);
+      return;
     }
 
-    const cronExp = this.generateCronExp(cronTime, type);
+    let cronTime = startTime;
+    try {
+      if (!device.utc) {
+        cronTime = this.convertLocalToUTC(startTime, timezone);
+      } else {
+        if (
+          !(typeof startTime === "string" && /^\d{1,2}:\d{2}$/.test(startTime))
+        ) {
+          cronTime = moment.tz(startTime, timezone).utc().format("HH:mm");
+        }
+      }
+    } catch (err) {
+      console.error(
+        `[Scheduler] Failed to normalize startTime for ${samId}:`,
+        err.message
+      );
+      return;
+    }
+
+    const cronExpOrArray = this.generateCronExp(cronTime, type);
     const jobKey = `${scheduleId}_${samId}`;
 
     if (this.jobs[jobKey]) {
-      this.jobs[jobKey].stop();
+      if (Array.isArray(this.jobs[jobKey])) {
+        this.jobs[jobKey].forEach((j) => j.stop());
+      } else {
+        this.jobs[jobKey].stop();
+      }
       delete this.jobs[jobKey];
     }
 
+    if (Array.isArray(cronExpOrArray)) {
+      this.jobs[jobKey] = [];
+      for (const cronExp of cronExpOrArray) {
+        const job = cron.schedule(
+          cronExp,
+          async () => {
+            console.log(
+              `[Scheduler] Collecting data for samId: ${samId} | Schedule ID: ${scheduleId} | TZ: ${timezone}`
+            );
+            await RaspiServices.collectData({ samId });
+            await LogsServices.createLog({
+              activity: `Schedule ID ${scheduleId} triggered for samId: ${samId}`,
+            });
+          },
+          { timezone }
+        );
+        this.jobs[jobKey].push(job);
+      }
+
+      console.log(
+        `[Scheduler] Created ${this.jobs[jobKey].length} jobs for samId: ${samId}, scheduleId: ${scheduleId}, timezone: ${timezone}`
+      );
+      return this.jobs[jobKey];
+    }
+
     const job = cron.schedule(
-      cronExp,
+      cronExpOrArray,
       async () => {
         console.log(
           `[Scheduler] Collecting data for samId: ${samId} | Schedule ID: ${scheduleId} | TZ: ${timezone}`
@@ -66,7 +149,7 @@ class ScheduleService {
 
     this.jobs[jobKey] = job;
     console.log(
-      `[Scheduler] Job created for samId: ${samId}, scheduleId: ${scheduleId}, cronExp: ${cronExp}, timezone: ${timezone}`
+      `[Scheduler] Job created for samId: ${samId}, scheduleId: ${scheduleId}, cronExp: ${cronExpOrArray}, timezone: ${timezone}`
     );
     return job;
   }
@@ -137,7 +220,11 @@ class ScheduleService {
       const stopJob = async (scheduleId, samId) => {
         const jobKey = `${scheduleId}_${samId}`;
         if (this.jobs[jobKey]) {
-          this.jobs[jobKey].stop();
+          if (Array.isArray(this.jobs[jobKey])) {
+            this.jobs[jobKey].forEach((j) => j.stop());
+          } else {
+            this.jobs[jobKey].stop();
+          }
           delete this.jobs[jobKey];
           console.log(`[Scheduler] Stopped job for samId: ${samId}`);
         }
@@ -245,12 +332,12 @@ class ScheduleService {
     try {
       const schedules = await ScheduleRepository.getActiveSchedules(true);
       for (const raw of schedules) {
-        const schedule = raw.get({ plain: true });
+        const schedule = raw.get ? raw.get({ plain: true }) : raw;
         if (!schedule.startTime) continue;
 
         const samIds = Array.isArray(schedule.samIds)
           ? schedule.samIds
-          : JSON.parse(schedule.samIds);
+          : JSON.parse(schedule.samIds || "[]");
 
         for (const samId of samIds) {
           await this.createJobForDevice(

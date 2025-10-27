@@ -12,7 +12,6 @@ const bucket = storage.bucket(bucketName);
 async function uploadToGCS(localFilePath, destinationPath) {
   await bucket.upload(localFilePath, {
     destination: destinationPath,
-    public: true,
     metadata: { cacheControl: "public, max-age=31536000" },
   });
   const file = bucket.file(destinationPath);

@@ -38,7 +38,6 @@ const middleware = require("./middleware/auth");
 
 const videoFolder = path.join(__dirname, "videos");
 app.use("/videos", express.static(videoFolder));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.get("/", (req, res) => {
   res.status(200).send({ message: "Successfully" });
@@ -99,6 +98,8 @@ app.get("/api/v4/raspi/:samId/connect", RaspiController.connect);
 app.get("/api/v4/raspi/:samId/collect", RaspiController.collect);
 app.post("/api/v4/raspi/:samId/configure", RaspiController.configure);
 app.get("/api/v4/raspi/:samId/config", RaspiController.getConfig);
+app.get("/api/v4/raspi/:samId/json", RaspiController.getAllFileJson);
+app.get("/api/v4/raspi/:samId/json/filename", RaspiController.getFileJson);
 
 // Schedule
 app.post("/api/v5/schedule/generate", ScheduleController.createSchedule);

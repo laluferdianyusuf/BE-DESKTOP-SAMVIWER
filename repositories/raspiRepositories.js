@@ -15,6 +15,8 @@ class RaspiRepositories {
       const response = await axios.post(`http://${ip}:5001/api/config`, config);
       return response.data;
     } catch (error) {
+      console.log(error);
+
       throw new Error(`Failed to configure device at ${ip}: ${error.message}`);
     }
   }
@@ -46,10 +48,10 @@ class RaspiRepositories {
     }
   }
 
-  static async getJsonFilename({ ip }) {
+  static async getJsonFilename({ ip, filename }) {
     try {
       const response = await axios.get(
-        `http://${ip}:5001/api/json-files${filename}`
+        `http://${ip}:5001/api/json-files/${filename}`
       );
       return response.data;
     } catch (error) {

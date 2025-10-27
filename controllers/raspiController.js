@@ -52,6 +52,33 @@ class RaspiController {
       data: data,
     });
   }
+
+  static async getAllFileJson(req, res) {
+    const { samId } = req.params;
+
+    const { status, status_code, message, data } =
+      await RaspiServices.getAllFileJson({ samId });
+    res.status(status_code).send({
+      status: status,
+      status_code: status_code,
+      message: message,
+      data: data,
+    });
+  }
+
+  static async getFileJson(req, res) {
+    const { samId } = req.params;
+    const { filename } = req.query;
+
+    const { status, status_code, message, data } =
+      await RaspiServices.getFileJson({ samId, filename });
+    res.status(status_code).send({
+      status: status,
+      status_code: status_code,
+      message: message,
+      data: data,
+    });
+  }
 }
 
 module.exports = RaspiController;
