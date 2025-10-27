@@ -1,0 +1,7 @@
+.env
+node_modules
+.dockerignore
+dockerfile
+docker-compose.yml
+config/gcs-key.json
+.vscode
