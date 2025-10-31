@@ -1,4 +1,4 @@
-const { Op, fn, col } = require("sequelize");
+const { Op, fn, col, where, literal } = require("sequelize");
 const { data, device } = require("../models");
 
 class DataRepositories {
@@ -149,6 +149,41 @@ class DataRepositories {
       },
       order: [["createdAt", "ASC"]],
     });
+  }
+
+  static async getSummaryBySam() {
+    const summaries = await data.findAll({
+      attributes: [
+        "samId",
+        [fn("COUNT", col("id")), "totalRecords"],
+        [fn("AVG", col("speed")), "averageSpeed"],
+        [
+          fn(
+            "SUM",
+            literal(`CASE WHEN category = 'over speed' THEN 1 ELSE 0 END`)
+          ),
+          "overSpeed",
+        ],
+      ],
+      where: {
+        samId: {
+          [Op.ne]: null,
+        },
+      },
+      group: ["samId"],
+      order: [["samId", "ASC"]],
+      raw: true,
+    });
+
+    return summaries.map((item) => ({
+      samId: item.samId,
+      totalRecords: Number(item.totalRecords) || 0,
+      averageSpeed:
+        item.averageSpeed !== null
+          ? Number(Number(item.averageSpeed).toFixed(2))
+          : 0,
+      overSpeed: Number(item.overSpeed) || 0,
+    }));
   }
 }
 module.exports = DataRepositories;

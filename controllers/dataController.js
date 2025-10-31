@@ -85,10 +85,22 @@ const getTrafficByFilter = async (req, res) => {
   });
 };
 
+const getSummaryData = async (req, res) => {
+  const { status, status_code, message, data } =
+    await dataServices.getSummaryData();
+  res.status(status_code).send({
+    status,
+    status_code,
+    message,
+    data,
+  });
+};
+
 module.exports = {
   createVideo,
   getSpeedByCategory,
   filterData,
   getAllData,
   getTrafficByFilter,
+  getSummaryData,
 };

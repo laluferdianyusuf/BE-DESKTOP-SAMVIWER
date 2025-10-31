@@ -93,9 +93,22 @@ const getAllDevice = async (req, res) => {
   });
 };
 
+const getSystemInfo = async (req, res) => {
+  const drivePath = req.query.path || "/" || "C:\\";
+  const { status, status_code, message, data } =
+    await DeviceServices.getSystemDiskSpace(drivePath);
+  res.status(status_code).send({
+    status,
+    status_code,
+    message,
+    data,
+  });
+};
+
 module.exports = {
   addDevice,
   updateDevice,
   deletedDevice,
   getAllDevice,
+  getSystemInfo,
 };

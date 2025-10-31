@@ -1,7 +1,8 @@
 const { Logger } = require("sequelize/lib/utils/logger");
 const DeviceRepositories = require("../repositories/deviceRepositories");
 const { v4: uuidv4 } = require("uuid");
-
+const { default: checkDiskSpace } = require("check-disk-space");
+const os = require("os");
 class DeviceServices {
   static async addDevice({
     samId,
@@ -183,6 +184,47 @@ class DeviceServices {
         data: { device: null },
       };
     }
+  }
+
+  static async getSystemDiskSpace(drivePath = "/") {
+    try {
+      const diskSpace = await checkDiskSpace(drivePath);
+
+      const total = diskSpace.size;
+      const free = diskSpace.free;
+      const used = total - free;
+      const usedPercent = ((used / total) * 100).toFixed(2);
+      const availablePercent = ((free / total) * 100).toFixed(2);
+
+      return {
+        status: true,
+        status_code: 200,
+        message: "Successfully retrieved disk space information",
+        data: {
+          path: drivePath,
+          total: DeviceServices.formatBytes(total),
+          used: DeviceServices.formatBytes(used),
+          free: DeviceServices.formatBytes(free),
+          usedPercent: `${usedPercent}%`,
+          availablePercent: `${availablePercent}%`,
+        },
+      };
+    } catch (error) {
+      return {
+        status: false,
+        status_code: 500,
+        message: "Error" + error,
+        data: null,
+      };
+    }
+  }
+
+  static formatBytes(bytes) {
+    if (bytes === 0) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB", "TB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   }
 }
 module.exports = DeviceServices;

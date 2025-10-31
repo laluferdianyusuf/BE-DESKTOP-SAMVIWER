@@ -81,6 +81,7 @@ app.post("/api/v2/add/device", DeviceController.addDevice);
 app.put("/api/v2/update/device/:deviceId", DeviceController.updateDevice);
 app.get("/api/v2/getAll/device", DeviceController.getAllDevice);
 app.delete("/api/v2/delete/device/:samId", DeviceController.deletedDevice);
+app.get("/api/v2/system/info", DeviceController.getSystemInfo);
 
 // Data
 app.post(
@@ -92,6 +93,7 @@ app.get("/api/v3/get/speed/category", DataController.getSpeedByCategory);
 app.get("/api/v3/filter/data/:samId", DataController.filterData);
 app.get("/api/v3/all/data/:samId", DataController.getAllData);
 app.get("/api/v3/get/all-data/filters", DataController.getTrafficByFilter);
+app.get("/api/v3/get/summary", DataController.getSummaryData);
 
 // Raspi
 app.get("/api/v4/raspi/:samId/connect", RaspiController.connect);

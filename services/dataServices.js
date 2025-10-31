@@ -285,6 +285,26 @@ class DataServices {
       };
     }
   }
+
+  static async getSummaryData() {
+    try {
+      const result = await DataRepositories.getSummaryBySam();
+
+      return {
+        status: true,
+        status_code: 200,
+        message: "Successfully",
+        data: result,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        status_code: 500,
+        message: "Error" + error,
+        data: null,
+      };
+    }
+  }
 }
 
 module.exports = DataServices;
