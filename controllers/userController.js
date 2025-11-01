@@ -34,7 +34,7 @@ const login = async (req, res) => {
     status,
     status_code,
     message,
-    data: data && data.user,
+    data: data && data.user && data.token,
   });
 };
 

@@ -9,7 +9,7 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     const hashedPassword = await bcrypt.hash("admin12345", JWT.SALT_ROUND);
 
-    await queryInterface.bulkInsert("Users", [
+    await queryInterface.bulkInsert("users", [
       {
         userId: uuidv4(),
         username: "adminSAM2",
@@ -21,6 +21,6 @@ module.exports = {
     ]);
   },
   async down(queryInterface, Sequelize) {
-    return queryInterface.bulkDelete("Users", null, {});
+    return queryInterface.bulkDelete("users", null, {});
   },
 };

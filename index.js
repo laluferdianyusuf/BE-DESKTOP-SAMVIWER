@@ -2,9 +2,20 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const path = require("path");
+const http = require("http");
+const { Server } = require("socket.io");
 const cookieParser = require("cookie-parser");
 const app = express();
 const PORT = 2090;
+const socketPort = 2091;
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  },
+});
 
 app.use(cookieParser());
 app.use(express.json());
@@ -13,8 +24,14 @@ app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      return callback(null, origin);
+
+      const allowed = /^https?:\/\/.*/.test(origin);
+      if (allowed) return callback(null, origin);
+
+      return callback(new Error("CORS blocked"));
     },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
@@ -41,6 +58,14 @@ app.use("/videos", express.static(videoFolder));
 
 app.get("/", (req, res) => {
   res.status(200).send({ message: "Successfully" });
+});
+
+io.on("connection", (socket) => {
+  console.log(`Client connected: ${socket.id}`);
+
+  socket.on("disconnect", () => {
+    console.log(`Client disconnected: ${socket.id}`);
+  });
 });
 
 (async () => {
@@ -148,4 +173,10 @@ app.get(
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server listening on http://localhost:${PORT}`);
+});
+
+server.listen(socketPort, () => {
+  console.log(
+    `Server with Socket.IO running on http://localhost:${socketPort}`
+  );
 });

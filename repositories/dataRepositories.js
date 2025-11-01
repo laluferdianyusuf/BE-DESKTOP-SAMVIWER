@@ -146,6 +146,7 @@ class DataRepositories {
           [Op.between]: [start, end],
         },
         category: "over speed",
+        video: { [Op.ne]: null || "tidak ada url" },
       },
       order: [["createdAt", "ASC"]],
     });
