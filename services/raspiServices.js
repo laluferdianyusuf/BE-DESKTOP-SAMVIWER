@@ -33,8 +33,7 @@ class RaspiServices {
         ip: device.cameraIP,
       });
 
-      const isConnected =
-        raspiStatus?.status === "connected" && cameraStatus?.connected === true;
+      const isConnected = raspiStatus?.status === "connected";
 
       await LogsServices.createLog({
         activity: `Device ${

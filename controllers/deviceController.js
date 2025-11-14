@@ -6,7 +6,6 @@ const addDevice = async (req, res) => {
     deviceIP,
     deviceRootFolder,
     cameraIP,
-    cameraRootFolder,
     cameraType,
     location,
     utc,
@@ -18,7 +17,6 @@ const addDevice = async (req, res) => {
       deviceIP,
       deviceRootFolder,
       cameraIP,
-      cameraRootFolder,
       cameraType,
       location,
       utc,
@@ -40,11 +38,10 @@ const updateDevice = async (req, res) => {
     deviceUsername,
     deviceRootFolder,
     cameraIP,
-    cameraUsername,
-    cameraPassword,
-    cameraRootFolder,
     cameraType,
     location,
+    utc,
+    timezone,
   } = req.body;
 
   const { status, status_code, message, data } =
@@ -55,11 +52,10 @@ const updateDevice = async (req, res) => {
       deviceUsername,
       deviceRootFolder,
       cameraIP,
-      cameraUsername,
-      cameraPassword,
-      cameraRootFolder,
       cameraType,
       location,
+      utc,
+      timezone,
     });
 
   res.status(status_code).send({

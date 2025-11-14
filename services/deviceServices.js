@@ -3,13 +3,13 @@ const DeviceRepositories = require("../repositories/deviceRepositories");
 const { v4: uuidv4 } = require("uuid");
 const { default: checkDiskSpace } = require("check-disk-space");
 const os = require("os");
+const DataRepositories = require("../repositories/dataRepositories");
 class DeviceServices {
   static async addDevice({
     samId,
     deviceIP,
     deviceRootFolder,
     cameraIP,
-    cameraRootFolder,
     cameraType,
     location,
     utc,
@@ -21,7 +21,6 @@ class DeviceServices {
         !deviceIP ||
         !deviceRootFolder ||
         !cameraIP ||
-        !cameraRootFolder ||
         !cameraType ||
         !location
       ) {
@@ -50,7 +49,6 @@ class DeviceServices {
         deviceIP,
         deviceRootFolder,
         cameraIP,
-        cameraRootFolder,
         cameraType,
         location,
         utc,
@@ -77,14 +75,14 @@ class DeviceServices {
     deviceIP,
     deviceRootFolder,
     cameraIP,
-    cameraRootFolder,
     cameraType,
+    cameraRootFolder,
     location,
+    utc,
+    timezone,
   }) {
     try {
-      const getDevice = await DeviceRepositories.existingDeviceId({
-        deviceId: deviceId,
-      });
+      const getDevice = await DeviceRepositories.existingDeviceId({ deviceId });
       if (!getDevice) {
         return {
           status: false,
@@ -100,16 +98,21 @@ class DeviceServices {
         return value;
       };
 
+      const newSamId = samId && samId.trim() !== "" ? samId : getDevice.samId;
+
       const updateData = {
         deviceId,
-        samId: keepOld(samId, getDevice.samId),
+        samId: newSamId,
         deviceIP: keepOld(deviceIP, getDevice.deviceIP),
         deviceRootFolder: keepOld(deviceRootFolder, getDevice.deviceRootFolder),
         cameraIP: keepOld(cameraIP, getDevice.cameraIP),
         cameraRootFolder: keepOld(cameraRootFolder, getDevice.cameraRootFolder),
         cameraType: keepOld(cameraType, getDevice.cameraType),
         location: keepOld(location, getDevice.location),
+        utc: keepOld(utc, getDevice.utc),
+        timezone: keepOld(timezone, getDevice.timezone),
       };
+
       const toUpdate = {};
       Object.keys(updateData).forEach((k) => {
         if (k === "deviceId") return;
@@ -120,6 +123,14 @@ class DeviceServices {
         deviceId,
         ...toUpdate,
       });
+
+      if (newSamId !== getDevice.samId) {
+        await DataRepositories.updateData({
+          oldSamId: getDevice.samId,
+          newSamId: newSamId,
+        });
+      }
+
       return {
         status: true,
         status_code: 200,
@@ -130,11 +141,12 @@ class DeviceServices {
       return {
         status: false,
         status_code: 500,
-        message: error,
+        message: error.message || error,
         data: { device: null },
       };
     }
   }
+
   static async deleteDevice({ samId }) {
     try {
       const getDevice = await DeviceRepositories.existingDevice({ samId });

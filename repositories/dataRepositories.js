@@ -1,4 +1,4 @@
-const { Op, fn, col, where, literal } = require("sequelize");
+const { Op, fn, col, literal } = require("sequelize");
 const { data, device } = require("../models");
 
 class DataRepositories {
@@ -13,7 +13,6 @@ class DataRepositories {
             "deviceIP",
             "deviceUsername",
             "cameraIP",
-            "cameraUsername",
             "cameraType",
             "location",
           ],
@@ -185,6 +184,15 @@ class DataRepositories {
           : 0,
       overSpeed: Number(item.overSpeed) || 0,
     }));
+  }
+
+  static async updateData({ oldSamId, newSamId }) {
+    return await data.update({
+      where: { samId: oldSamId },
+      data: {
+        samId: newSamId,
+      },
+    });
   }
 }
 module.exports = DataRepositories;

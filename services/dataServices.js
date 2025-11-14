@@ -218,15 +218,23 @@ class DataServices {
 
   static async sendYesterdayReport() {
     const today = new Date();
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - 1);
+    startDate.setHours(0, 0, 0, 0);
+
     const endDate = new Date(today);
     endDate.setDate(today.getDate() - 1);
-    const startDate = new Date(today);
-    startDate.setDate(today.getDate() - 14);
+    endDate.setHours(23, 59, 59, 999);
 
     const data = await DataRepositories.getAllDataYesterday({
       startDate: startDate,
       endDate: endDate,
     });
+
+    if (!data || data.length === 0) {
+      console.log("Tidak ada data kemarin. Email tidak dikirim.");
+      return;
+    }
 
     const htmlTable = generateLogTable(data);
 
